@@ -1,0 +1,28 @@
+{
+  "name": "tiago-bernardo-project",
+  "version": "0.1.0",
+  "authors": [
+    "Tiago Bernardo <tiago.bernardo@gmail.com>"
+  ],
+  "description": "TODO app",
+  "main": "index.js",
+  "moduleType": [
+    "node"
+  ],
+  "keywords": [
+    "todo",
+    "mongo",
+    "express",
+    "angular",
+    "node",
+    "mean"
+  ],
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

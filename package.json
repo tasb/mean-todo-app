@@ -1,0 +1,30 @@
+{
+  "name": "tiago-bernardo-project",
+  "version": "0.1.0",
+  "description": "TODO app",
+  "author": "Tiago Bernardo <tiago.bernardo@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:tasb/mean-todo-app.git"
+  },
+  "keywords": [
+    "todo",
+    "mongo",
+    "express",
+    "angular",
+    "node",
+    "mean"
+  ],
+  "main": "index.js",
+  "scripts": {
+    "test": "\"./node_modules/mocha/bin/mocha -R spec test\""
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "grunt": "^0.4.4",
+    "grunt-contrib-jshint": "^0.9.2"
+  },
+  "engines": {
+    "node": ">=0.10"
+  }
+}
