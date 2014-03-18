@@ -52,8 +52,8 @@ UserSchema.statics.findByName = function (name, cb) {
     this.find({ name: new RegExp(name, 'i') }).sort('name').exec(cb);
 };
 
-UserSchema.statics.findByEmail = function (name, cb) {
-    this.find({ name: new RegExp(name, 'i') }).sort('name').exec(cb);
+UserSchema.statics.findByEmail = function (email, cb) {
+    this.find({ email: new RegExp(email, 'i') }).sort('name').exec(cb);
 };
 
 UserSchema.path('email').index({ unique: true });

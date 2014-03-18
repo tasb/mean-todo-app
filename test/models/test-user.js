@@ -9,8 +9,7 @@ describe('User Model', function () {
         User;
 
     function cleanUserCollection() {
-        User.remove({}, function () {
-        });
+        User.remove({}).exec();
     }
 
     before(function () {
@@ -19,7 +18,7 @@ describe('User Model', function () {
         cleanUserCollection();
     });
 
-    describe('Adding user', function () {
+    describe('CRUD user', function () {
         it('should return error when inserting a user without a email', function (done) {
             var wrongUser = new User({ });
             wrongUser.save(function (err, doc, numberAffected) {
@@ -89,6 +88,7 @@ describe('User Model', function () {
                 doc.should.have.property('email', 'test@email.com');
                 doc.should.have.property('password', 'PASSWORD');
                 doc.should.have.property('salt', 'SALT');
+                doc.should.have.property('name', 'Test user');
                 numberAffected.should.equal(1);
                 done();
             });
@@ -101,6 +101,81 @@ describe('User Model', function () {
                 err.message.should.containEql('duplicate key error');
                 should.not.exist(doc);
                 should.not.exist(numberAffected);
+                done();
+            });
+        });
+
+        it('should return success when updating a user', function (done) {
+            var okUser = new User({ email: 'test2@email.com', name: 'Test user', password: 'PASSWORD', salt: 'SALT' });
+            okUser.save(function (err, doc, numberAffected) {
+                should.not.exist(err);
+                should.exist(doc);
+                doc.should.equal(okUser);
+                doc.should.have.property('email', 'test2@email.com');
+                doc.should.have.property('password', 'PASSWORD');
+                doc.should.have.property('salt', 'SALT');
+                doc.should.have.property('name', 'Test user');
+                numberAffected.should.equal(1);
+
+                doc.name = 'Test user 2';
+                doc.update = new Date().getTime();
+
+                doc.save(function (err, updated, numberAffected) {
+                    should.not.exist(err);
+                    should.exist(updated);
+                    updated.should.equal(doc);
+                    updated.should.have.property('email', 'test2@email.com');
+                    updated.should.have.property('password', 'PASSWORD');
+                    updated.should.have.property('salt', 'SALT');
+                    updated.should.have.property('name', 'Test user 2');
+                    numberAffected.should.equal(1);
+                    done();
+                });
+            });
+        });
+
+        it('should return 1 record after removing a user', function (done) {
+            User.remove({ email: 'test2@email.com'}, function (err) {
+                should.not.exist(err);
+
+                User.find({}, function (err, docs) {
+                    should.not.exist(err);
+                    should.exist(docs);
+                    docs.should.be.instanceof(Array).and.have.lengthOf(1);
+                    done();
+                });
+            });
+        });
+
+        it('should return 1 records when find user by name using "Test"', function (done) {
+            User.findByName('Test', function (err, docs) {
+                should.not.exist(err);
+                should.exist(docs);
+                docs.should.be.instanceof(Array).and.have.lengthOf(1);
+                done();
+            });
+        });
+        it('should return zero records when find user by name using "Tiago"', function (done) {
+            User.findByName('Tiago', function (err, docs) {
+                should.not.exist(err);
+                should.exist(docs);
+                docs.should.be.instanceof(Array).and.have.lengthOf(0);
+                done();
+            });
+        });
+        it('should return 1 records when find user by email using "test@email.com"', function (done) {
+            User.findByEmail('test@email.com', function (err, docs) {
+                should.not.exist(err);
+                should.exist(docs);
+                docs.should.be.instanceof(Array).and.have.lengthOf(1);
+                done();
+            });
+        });
+        it('should return 0 records when find user by email using "test_error@email.com"', function (done) {
+            User.findByEmail('test_error@email.com', function (err, docs) {
+                should.not.exist(err);
+                should.exist(docs);
+                docs.should.be.instanceof(Array).and.have.lengthOf(0);
                 done();
             });
         });

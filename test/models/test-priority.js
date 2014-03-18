@@ -9,8 +9,7 @@ describe('Priority model', function () {
         Priority;
 
     function cleanPriorityCollection() {
-        Priority.remove({}, function () {
-        });
+        Priority.remove({}).exec();
     }
 
     before(function () {
