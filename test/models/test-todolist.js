@@ -136,7 +136,7 @@ describe('TODO List Model', function () {
         });
 
         it('should return two records when search TODO List by user for mockUser', function (done) {
-            TodoList.findByUser(mockUser._id, function (err, docs) {
+            TodoList.findByUser(mockUser, function (err, docs) {
                 should.not.exist(err);
                 should.exist(docs);
                 docs.should.be.instanceof(Array).and.have.lengthOf(2);
