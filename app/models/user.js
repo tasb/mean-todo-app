@@ -6,8 +6,8 @@ var mongoose = require('mongoose'),
 
 var UserSchema = new Schema({
     email: {
-        required: true,
         type: String,
+        required: true,
         trim: true,
         validate: [validate.email, 'invalid email address']
     },
