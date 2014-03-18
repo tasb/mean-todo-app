@@ -20,7 +20,8 @@
     "test": "NODE_ENV=test ./node_modules/.bin/mocha --reporter spec --timeout 10000  --recursive test"
   },
   "dependencies": {
-    "mongoose": "3.8.x"
+    "mongoose": "3.8.x",
+    "mongoose-validate": "0.0.x"
   },
   "devDependencies": {
     "grunt": "0.4.x",

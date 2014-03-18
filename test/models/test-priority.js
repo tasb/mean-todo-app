@@ -4,13 +4,19 @@ var should = require('should'),
     mongoose = require('mongoose'),
     PrioritySchema = require('../../app/models/priority.js');
 
-describe('Priority', function () {
+describe('Priority model', function () {
     var db,
         Priority;
+
+    function cleanPriorityCollection() {
+        Priority.remove({}, function () {
+        });
+    }
 
     before(function () {
         db = mongoose.createConnection('mongodb://@127.0.0.1:27017/todo-test');
         Priority = db.model('priority', PrioritySchema);
+        cleanPriorityCollection();
     });
 
     describe('CRUD Priority', function () {
@@ -147,8 +153,6 @@ describe('Priority', function () {
     });
 
     after(function () {
-        Priority.remove({}, function () {
-            console.log('collection removed');
-        });
+        cleanPriorityCollection();
     });
 });
