@@ -22,12 +22,12 @@ var PrioritySchema = new Schema({
     },
     created: {
         type: Date,
-        default: Date.now,
+        default: new Date().getTime(),
         required: true
     },
     updated: {
         type: Date,
-        default: Date.now,
+        default: new Date().getTime(),
         required: true
     }
 });

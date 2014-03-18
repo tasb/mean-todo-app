@@ -2,20 +2,102 @@
 
 var should = require('should'),
     mongoose = require('mongoose'),
-    PrioritySchema = require('../app/models/priority.js');
+    PrioritySchema = require('../../app/models/priority.js');
 
-suite('Priority', function () {
+describe('Priority', function () {
     var db,
-        priority;
+        Priority;
 
-    setup(function () {
+    before(function () {
         db = mongoose.createConnection('mongodb://@127.0.0.1:27017/todo-test');
-        priority = db.model('priority', PrioritySchema);
+        Priority = db.model('priority', PrioritySchema);
     });
 
-    suite('#indexOf()', function () {
-        test('should return -1 when not present', function () {
-
+    describe('CRUD Priority', function () {
+        it('should return error when inserting a priority without a name', function (done) {
+            var wrongPriority = new Priority({ order: 1, color: 'color' });
+            wrongPriority.save(function (err, doc, numberAffected) {
+                should.exist(err);
+                err.message.should.equal('Validation failed');
+                err.errors.name.message.should.equal('Path `name` is required.');
+                should.not.exist(doc);
+                should.not.exist(numberAffected);
+                done();
+            });
         });
+
+        it('should return error when inserting a priority without an order number', function (done) {
+            var wrongPriority = new Priority({ name: 'Urgent', color: 'color' });
+            wrongPriority.save(function (err, doc, numberAffected) {
+                should.exist(err);
+                err.message.should.equal('Validation failed');
+                err.errors.order.message.should.equal('Path `order` is required.');
+                should.not.exist(doc);
+                should.not.exist(numberAffected);
+                done();
+            });
+        });
+
+        it('should return error when inserting a priority without an order number less than 1', function (done) {
+            var wrongPriority = new Priority({ name: 'Urgent', order: 0, color: 'color' });
+            wrongPriority.save(function (err, doc, numberAffected) {
+                should.exist(err);
+                err.message.should.equal('Validation failed');
+                err.errors.order.message.should.equal('Path `order` () is less than minimum allowed value (1).');
+                should.not.exist(doc);
+                should.not.exist(numberAffected);
+                done();
+            });
+        });
+
+        it('should return error when inserting a priority with a bad format color', function (done) {
+            var wrongPriority = new Priority({ name: 'Urgent', order: 1, color: 'color' });
+            wrongPriority.save(function (err, doc, numberAffected) {
+                should.exist(err);
+                err.message.should.equal('Validation failed');
+                err.errors.color.message.should.equal('Path `color` is invalid (color).');
+                should.not.exist(doc);
+                should.not.exist(numberAffected);
+                done();
+            });
+        });
+
+        it('should return success when inserting a priority', function (done) {
+            var okPriority = new Priority({ name: 'Urgent', order: 1, color: '#FF0000' });
+            okPriority.save(function (err, doc, numberAffected) {
+                should.not.exist(err);
+                should.exist(doc);
+                doc.should.equal(okPriority);
+                numberAffected.should.equal(1);
+                done();
+            });
+        });
+
+        it('should return success when updating a priority', function (done) {
+            var updatePriority = new Priority({ name: 'High', order: 2, color: '#00FF00' });
+            updatePriority.save(function (err, doc, numberAffected) {
+                should.not.exist(err);
+                should.exist(doc);
+                doc.should.equal(updatePriority);
+                numberAffected.should.equal(1);
+
+                doc.color = '#00FF55';
+                doc.updated = new Date().getTime();
+
+                doc.save(function (err, updatedoc, numberAffected) {
+                    should.not.exist(err);
+                    should.exist(doc);
+                    updatedoc.should.equal(doc);
+                    numberAffected.should.equal(1);
+                    done();
+                });
+            });
+        });
+    });
+
+    after(function () {
+        // Priority.remove({}, function () {
+        //     console.log('collection removed');
+        // });
     });
 });
