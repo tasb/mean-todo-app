@@ -73,6 +73,28 @@ describe('Priority', function () {
             });
         });
 
+        it('should return error when inserting a priority with same namer', function (done) {
+            var wrongPriority = new Priority({ name: 'Urgent', order: 2, color: '#FF0000' });
+            wrongPriority.save(function (err, doc, numberAffected) {
+                should.exist(err);
+                err.message.should.containEql('duplicate key error');
+                should.not.exist(doc);
+                should.not.exist(numberAffected);
+                done();
+            });
+        });
+
+        it('should return error when inserting a priority with same order number', function (done) {
+            var wrongPriority = new Priority({ name: 'Normal', order: 1, color: '#FF0000' });
+            wrongPriority.save(function (err, doc, numberAffected) {
+                should.exist(err);
+                err.message.should.containEql('duplicate key error');
+                should.not.exist(doc);
+                should.not.exist(numberAffected);
+                done();
+            });
+        });
+
         it('should return success when updating a priority', function (done) {
             var updatePriority = new Priority({ name: 'High', order: 2, color: '#00FF00' });
             updatePriority.save(function (err, doc, numberAffected) {
@@ -93,11 +115,40 @@ describe('Priority', function () {
                 });
             });
         });
+
+        it('should return two records when find priority with {} query', function (done) {
+            Priority.find({}, function (err, docs) {
+                should.not.exist(err);
+                should.exist(docs);
+                docs.should.be.instanceof(Array).and.have.lengthOf(2);
+                done();
+            });
+        });
+
+        it('should return zero records when find priority by name using "Low"', function (done) {
+            Priority.findByName('Low', function (err, docs) {
+                should.not.exist(err);
+                should.exist(docs);
+                docs.should.be.instanceof(Array).and.have.lengthOf(0);
+                done();
+            });
+        });
+
+        it('should return two records when finding all priority ordered by "order" property', function (done) {
+            Priority.findByName('', function (err, docs) {
+                should.not.exist(err);
+                should.exist(docs);
+                docs.should.be.instanceof(Array).and.have.lengthOf(2);
+                docs[0].order.should.be.lessThan(docs[1].order);
+                docs[1].order.should.be.greaterThan(docs[0].order);
+                done();
+            });
+        });
     });
 
     after(function () {
-        // Priority.remove({}, function () {
-        //     console.log('collection removed');
-        // });
+        Priority.remove({}, function () {
+            console.log('collection removed');
+        });
     });
 });
