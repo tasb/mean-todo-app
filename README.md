@@ -24,6 +24,7 @@ Tech
 * [MongoDB] - NoSQl database for persistence
 * [Mongoose] - mongo ORM module for node.js
 * [Mocha] - BDD/TDD testing framework for node.js
+* [Redis] - key-value store with fast performance
 
 Prerequesite
 ------------
@@ -56,3 +57,4 @@ Open browser on url [http://127.0.0.1:9500] and you can start organizing your da
 [Mongoose]:http://mongoosejs.com
 [Mocha]:http://visionmedia.github.io/mocha
 [http://127.0.0.1:9500]:http://127.0.0.1:9500
+[Redis]:http://redis.io
