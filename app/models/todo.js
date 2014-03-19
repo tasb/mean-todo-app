@@ -50,4 +50,8 @@ TodoSchema.statics.findByTextOnTodoList = function (text, todoList, cb) {
     this.find({ todoList: todoList._id, text: new RegExp(text, 'i') }).sort('text').exec(cb);
 };
 
+TodoSchema.statics.findAll = function (cb) {
+    this.find({ }).sort('order').exec(cb);
+};
+
 exports = module.exports = TodoSchema;

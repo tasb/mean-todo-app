@@ -34,6 +34,10 @@ TodoListSchema.statics.findByUser = function (user, cb) {
     this.find({ user: user._id }).sort('name').exec(cb);
 };
 
+TodoListSchema.statics.findAll = function (cb) {
+    this.find({ }).sort('order').exec(cb);
+};
+
 TodoListSchema.index({user: 1, name: 1}, {unique: true});
 
 exports = module.exports = TodoListSchema;

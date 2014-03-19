@@ -36,6 +36,10 @@ PrioritySchema.statics.findByName = function (name, cb) {
     this.find({ name: new RegExp(name, 'i') }).sort('order').exec(cb);
 };
 
+PrioritySchema.statics.findAll = function (cb) {
+    this.find({ }).sort('order').exec(cb);
+};
+
 PrioritySchema.path('name').index({ unique: true });
 PrioritySchema.path('order').index({ unique: true });
 

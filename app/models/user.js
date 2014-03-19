@@ -56,6 +56,10 @@ UserSchema.statics.findByEmail = function (email, cb) {
     this.find({ email: new RegExp(email, 'i') }).sort('name').exec(cb);
 };
 
+UserSchema.statics.findAll = function (cb) {
+    this.find({ }).sort('order').exec(cb);
+};
+
 UserSchema.path('email').index({ unique: true });
 
 exports = module.exports = UserSchema;
