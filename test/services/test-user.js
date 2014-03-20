@@ -19,6 +19,11 @@ describe('User Services', function () {
                 port: '27017',
                 database: 'todo-test'
             },
+            cache: {
+                host: '127.0.0.1',
+                port: '6379',
+                database: '5'
+            },
             hash: {
                 algorithm: 'pbkdf2',
                 iterations: 1000,
@@ -103,6 +108,44 @@ describe('User Services', function () {
                 should.not.exist(err);
                 should.exist(token);
                 securityToken = token;
+                done();
+            });
+        });
+    });
+
+    describe('Logout user', function () {
+        it('should return error when try to logout without a email', function (done) {
+            service.logout('', function (err, success) {
+                should.exist(err);
+                err.message.should.equal('Invalid parameters: Email is mandatory');
+                should.not.exist(success);
+                done();
+            });
+        });
+
+        it('should return error when try to logout a user that is not present on storage', function (done) {
+            service.logout('test2@email.com', function (err, success) {
+                should.exist(err);
+                err.message.should.equal('Invalid user');
+                should.not.exist(success);
+                done();
+            });
+        });
+
+        it('should return success when try to logout a user', function (done) {
+            service.logout('test@email.com', 'PASSWORD', function (err, success) {
+                should.not.exist(err);
+                should.exist(success);
+                success.should.be.ok;
+                done();
+            });
+        });
+
+        it('should return not success when try to logout a not logged in user', function (done) {
+            service.logout('test@email.com', function (err, success) {
+                should.not.exist(err);
+                should.exist(success);
+                success.should.not.be.ok;
                 done();
             });
         });
