@@ -1,19 +1,23 @@
 'use strict';
 
 var should = require('should'),
-    UserService = require('../../app/services/user.js');
+    mongoose = require('mongoose'),
+    UserService = require('../../app/services/user.js'),
+    UserSchema = require('../../app/models/user.js');
 
 describe('User Services', function () {
     var service,
         securityToken;
 
     function cleanUp() {
-
+        var db = mongoose.createConnection('mongodb://@127.0.0.1:27017/todo-test'),
+            User = db.model('user', UserSchema);
+        User.remove({}).exec();
     }
 
     before(function () {
         service = new UserService({
-            logLevel: 'trace',
+            log: console,
             storage: {
                 host: '127.0.0.1',
                 port: '27017',
@@ -30,7 +34,7 @@ describe('User Services', function () {
                 salt: 16,
                 size: 256
             },
-            opts: {
+            misc: {
                 tokenExpire: 3600,
                 missingPasswordRetries: 0,
             }
@@ -113,9 +117,38 @@ describe('User Services', function () {
         });
     });
 
+    describe('Validate token', function () {
+        it('should return not success when validating an invalid token', function (done) {
+            service.validateToken('XXXXXXXXXXXX', function (err, success) {
+                should.not.exist(err);
+                should.exist(success);
+                success.should.be.not.ok;
+                done();
+            });
+        });
+
+        it('should return not success when validating an valid token', function (done) {
+            service.validateToken(securityToken, function (err, success) {
+                should.not.exist(err);
+                should.exist(success);
+                success.should.be.ok;
+                done();
+            });
+        });
+    });
+
     describe('Logout user', function () {
+        it('should return error when try to logout without a token', function (done) {
+            service.logout('', '', function (err, success) {
+                should.exist(err);
+                err.message.should.equal('Invalid parameters: Token is mandatory');
+                should.not.exist(success);
+                done();
+            });
+        });
+
         it('should return error when try to logout without a email', function (done) {
-            service.logout('', function (err, success) {
+            service.logout('XXXXXXX', '', function (err, success) {
                 should.exist(err);
                 err.message.should.equal('Invalid parameters: Email is mandatory');
                 should.not.exist(success);
@@ -123,17 +156,17 @@ describe('User Services', function () {
             });
         });
 
-        it('should return error when try to logout a user that is not present on storage', function (done) {
-            service.logout('test2@email.com', function (err, success) {
+        it('should return error when try to logout a user with invalid token', function (done) {
+            service.logout('XXXXXXX', 'test2@email.com', function (err, success) {
                 should.exist(err);
-                err.message.should.equal('Invalid user');
+                err.message.should.equal('Invalid token');
                 should.not.exist(success);
                 done();
             });
         });
 
         it('should return success when try to logout a user', function (done) {
-            service.logout('test@email.com', 'PASSWORD', function (err, success) {
+            service.logout(securityToken, 'test@email.com', 'PASSWORD', function (err, success) {
                 should.not.exist(err);
                 should.exist(success);
                 success.should.be.ok;
@@ -143,9 +176,9 @@ describe('User Services', function () {
 
         it('should return not success when try to logout a not logged in user', function (done) {
             service.logout('test@email.com', function (err, success) {
-                should.not.exist(err);
-                should.exist(success);
-                success.should.not.be.ok;
+                should.exist(err);
+                err.message.should.equal('Invalid token');
+                should.not.exist(success);
                 done();
             });
         });
