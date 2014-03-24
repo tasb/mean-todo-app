@@ -80,16 +80,20 @@ var UserService = function (opts) {
     self.compilePassword = function (pass, salt) {
         if (!salt) {
             salt = crypto.randomBytes(self.cfg.hash.salt);
+            salt = salt.toString('hex');
         }
+
+        var passBuf = crypto.pbkdf2Sync(pass, salt, this.cfg.hash.iterations, this.cfg.hash.size);
 
         return {
             salt: salt,
-            pass: crypto.pbkdf2Sync(pass, salt, this.cfg.hash.iteration, this.cfg.hash.size)
+            pass: passBuf.toString('hex')
         };
     };
 
     self.generateToken = function (email) {
         var token = crypto.randomBytes(self.cfg.misc.tokenSize);
+        token = token.toString('hex');
 
         self.cache.set(email, token);
         self.cache.set(token, email);
@@ -156,20 +160,24 @@ UserService.prototype.register = function (email, name, password, cb) {
     if (('string' !== typeof email) ||
             (email === '')) {
         cb('Invalid parameters: Email is mandatory', null);
+        return;
     }
 
     if (('string' !== typeof name) ||
             (name === '')) {
         cb('Invalid parameters: Name is mandatory', null);
+        return;
     }
 
     if (('string' !== typeof password) ||
             (password === '')) {
         cb('Invalid parameters: Password is mandatory', null);
+        return;
     }
 
     if ('function' !== typeof cb) {
         cb('Invalid parameters: Callback is mandatory', null);
+        return;
     }
 
     var credentials = this.compilePassword(password),
@@ -192,21 +200,26 @@ UserService.prototype.register = function (email, name, password, cb) {
  * @param {loginCallback} cb Return callback
  */
 UserService.prototype.login = function (email, password, cb) {
+    var self = this;
+
     if (('string' !== typeof email) ||
             (email === '')) {
-        cb('Invalid parameters: Email is mandatory', null);
+        cb('Invalid credentials', null);
+        return;
     }
 
     if (('string' !== typeof password) ||
             (password === '')) {
-        cb('Invalid parameters: Password is mandatory', null);
+        cb('Invalid credentials', null);
+        return;
     }
 
     if ('function' !== typeof cb) {
         cb('Invalid parameters: Callback is mandatory', null);
+        return;
     }
 
-    this.UserModel.findByEmail(email, function (err, docs) {
+    self.UserModel.findByEmail(email, function (err, docs) {
         if (err) {
             cb(err, null);
             return;
@@ -218,7 +231,7 @@ UserService.prototype.login = function (email, password, cb) {
         }
 
         var thisUser = docs[0],
-            credentials = this.compilePassword(password, thisUser.salt),
+            credentials = self.compilePassword(password, thisUser.salt),
             token = null;
 
         if (credentials.pass !== thisUser.password) {
@@ -226,7 +239,7 @@ UserService.prototype.login = function (email, password, cb) {
             return;
         }
 
-        token = this.generateToken(email);
+        token = self.generateToken(email);
         cb(null, token);
     });
 };
@@ -242,13 +255,15 @@ UserService.prototype.validateToken = function (token, cb) {
     if (('string' !== typeof token) ||
             (token === '')) {
         cb('Invalid parameters: Token is mandatory', null);
+        return;
     }
 
     if ('function' !== typeof cb) {
         cb('Invalid parameters: Callback is mandatory', null);
+        return;
     }
 
-    this.chechToken(token, cb);
+    this.checkToken(token, cb);
 };
 
 
@@ -263,10 +278,12 @@ UserService.prototype.logout = function (email, cb) {
     if (('string' !== typeof email) ||
             (email === '')) {
         cb('Invalid parameters: Email is mandatory', null);
+        return;
     }
 
     if ('function' !== typeof cb) {
         cb('Invalid parameters: Callback is mandatory', null);
+        return;
     }
 
     this.invalidateToken(email);

@@ -6,8 +6,7 @@ var should = require('should'),
     UserSchema = require('../../app/models/user.js');
 
 describe('User Services', function () {
-    var service,
-        securityToken;
+    var service;
 
     function cleanUp() {
         var db = mongoose.createConnection('mongodb://@127.0.0.1:27017/todo-test'),
@@ -26,7 +25,7 @@ describe('User Services', function () {
             cache: {
                 host: '127.0.0.1',
                 port: '6379',
-                database: '5'
+                database: '2'
             },
             hash: {
                 algorithm: 'pbkdf2',
@@ -109,11 +108,14 @@ describe('User Services', function () {
         });
 
         it('should return success when try to login with correct pasword', function (done) {
-            service.login('test@email.com', 'PASSWORD', function (err, token) {
+            service.register('test2@email.com', 'Test User', 'PASSWORD', function (err, success) {
                 should.not.exist(err);
-                should.exist(token);
-                securityToken = token;
-                done();
+                should.exist(success);
+                service.login('test2@email.com', 'PASSWORD', function (err, token) {
+                    should.not.exist(err);
+                    should.exist(token);
+                    done();
+                });
             });
         });
     });
@@ -128,12 +130,20 @@ describe('User Services', function () {
             });
         });
 
-        it('should return not success when validating an valid token', function (done) {
-            service.validateToken(securityToken, function (err, success) {
+        it('should return success when validating an valid token', function (done) {
+            service.register('test3@email.com', 'Test User', 'PASSWORD', function (err, success) {
                 should.not.exist(err);
                 should.exist(success);
-                success.should.be.ok;
-                done();
+                service.login('test3@email.com', 'PASSWORD', function (err, token) {
+                    should.not.exist(err);
+                    should.exist(token);
+                    service.validateToken(token, function (err, success) {
+                        should.not.exist(err);
+                        should.exist(success);
+                        success.should.be.ok;
+                        done();
+                    });
+                });
             });
         });
     });
@@ -149,7 +159,7 @@ describe('User Services', function () {
         });
 
         it('should return success when try to logout a user', function (done) {
-            service.logout('test@email.com', 'PASSWORD', function (err, success) {
+            service.logout('test@email.com', function (err, success) {
                 should.not.exist(err);
                 should.exist(success);
                 success.should.be.ok;
