@@ -15,6 +15,8 @@ describe('User Services', function () {
     }
 
     before(function () {
+        console.info = function () {
+        };
         service = new UserService({
             log: console,
             storage: {

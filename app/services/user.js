@@ -157,6 +157,7 @@ var UserService = function (opts) {
  * @param {successCallback} cb Return callback
  */
 UserService.prototype.register = function (email, name, password, cb) {
+    this.logger.info('[User Service] Register user. Name: %s, email: %s', name, email);
     if (('string' !== typeof email) ||
             (email === '')) {
         cb('Invalid parameters: Email is mandatory', null);
@@ -201,6 +202,7 @@ UserService.prototype.register = function (email, name, password, cb) {
  */
 UserService.prototype.login = function (email, password, cb) {
     var self = this;
+    self.logger.info('[User Service] Login user. Email: %s', email);
 
     if (('string' !== typeof email) ||
             (email === '')) {
@@ -252,6 +254,7 @@ UserService.prototype.login = function (email, password, cb) {
  * @param {successCallback} cb Return callback
  */
 UserService.prototype.validateToken = function (token, cb) {
+    this.logger.info('[User Service] Validate token.');
     if (('string' !== typeof token) ||
             (token === '')) {
         cb('Invalid parameters: Token is mandatory', null);
@@ -275,6 +278,7 @@ UserService.prototype.validateToken = function (token, cb) {
  * @param {successCallback} cb Return callback
  */
 UserService.prototype.logout = function (email, cb) {
+    this.logger.info('[User Service] Logout user. Email: %s', email);
     if (('string' !== typeof email) ||
             (email === '')) {
         cb('Invalid parameters: Email is mandatory', null);
