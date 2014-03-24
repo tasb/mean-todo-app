@@ -1,11 +1,16 @@
 'use strict';
 
+var crypto = require('crypto'),
+    mongoose = require('mongoose'),
+    redis = require('redis'),
+    UserSchema = require('../models/user.js');
+
 
 /**
  * UserService class implements all services related with user model:
  * register, login, validateToken and logout
  * 
- * @param {json} opts The options for service
+ * @param {Object} opts The options for service
  *    @param {Object} opts.log Logger instance
  *    @param {Object} opts.storage Storage config. Where model will be persisted (Mongo Server)
  *      @param {string} opts.storage.host Storage config: hostname
@@ -24,12 +29,102 @@
  *      @param {Number} opts.hash.salt Salt size (in bytes)
  *      @param {Number} opts.hash.size Password hash size (in bytes)
  *    @param {Object} opts.misc Misc options
+ *      @param {Number} opts.misc.tokenSize Token size (in bytes)
  *      @param {Number} opts.misc.tokenExpire Token validation ttl (in seconds)
  *      @param {Number} opts.misc.missingPasswordRetries Allowed number of missing password before blocking (0 means no validation)
  */
 var UserService = function (opts) {
-    this.cfg = opts || {};
-    this.logger = opts.log;
+    var self = this;
+    self.cfg = opts || {};
+    self.logger = opts.log;
+    self.storage = null; // mongoose connection
+    self.UserModel = null; // User model
+    self.cache = null; // Redis connection
+
+    self.init = function () {
+        self.storage = mongoose.createConnection();
+        self.storage.open(self.cfg.storage.host, self.cfg.storage.database, self.cfg.storage.port, {
+            user: self.cfg.storage.user,
+            pass: self.cfg.storage.pass
+        });
+        self.UserModel = self.storage.model('user', UserSchema);
+
+        self.cache = redis.createClient(self.cfg.cache.port, self.cfg.cache.host);
+        self.cache.on('error', function (err) {
+            self.logger.error('[UserService] Error on cache access. Details: ' + err);
+        });
+
+        if (self.cfg.cache.pass) {
+            self.cache.auth(self.cfg.cache.pass, function (err) {
+                if (err) {
+                    self.logger.error('[UserService] Error on AUTH command. Details: ' + err);
+                    return;
+                }
+
+                self.logger.info('[UserService] Success on AUTH command!');
+            });
+        }
+
+        if (self.cfg.cache.database) {
+            self.cache.select(self.cfg.cache.database, function (err) {
+                if (err) {
+                    self.logger.error('[UserService] Error on SELECT command. Details: ' + err);
+                    return;
+                }
+
+                //self.logger.info('[UserService] Success on SELECT command!');
+            });
+        }
+    };
+
+    self.compilePassword = function (pass, salt) {
+        if (!salt) {
+            salt = crypto.randomBytes(self.cfg.hash.salt);
+        }
+
+        return {
+            salt: salt,
+            pass: crypto.pbkdf2Sync(pass, salt, this.cfg.hash.iteration, this.cfg.hash.size)
+        };
+    };
+
+    self.generateToken = function (email) {
+        var token = crypto.randomBytes(self.cfg.misc.tokenSize);
+
+        self.cache.set(email, token);
+        self.cache.set(token, email);
+        self.cache.expire(email, self.cfg.misc.tokenExpire);
+        self.cache.expire(token, self.cfg.misc.tokenExpire);
+
+        return token;
+    };
+
+    self.checkToken = function (token, cb) {
+        self.cache.exists(token, function (err, result) {
+            if (err) {
+                self.logger.error('[User Service] Error getting value for key ' + token + '. Details: ' + err);
+                cb(err, null);
+                return;
+            }
+
+            cb(null, result);
+        });
+    };
+
+    self.invalidateToken = function (email, cb) {
+        self.cache.get(email, function (err, token) {
+            if (err) {
+                self.logger.error('[User Service] Error getting value for key ' + token + '. Details: ' + err);
+                cb(err, null);
+                return;
+            }
+
+            self.cache.del(email);
+            self.cache.del(token);
+        });
+    };
+
+    self.init();
 };
 
 /**
@@ -58,7 +153,34 @@ var UserService = function (opts) {
  * @param {successCallback} cb Return callback
  */
 UserService.prototype.register = function (email, name, password, cb) {
+    if (('string' !== typeof email) ||
+            (email === '')) {
+        cb('Invalid parameters: Email is mandatory', null);
+    }
 
+    if (('string' !== typeof name) ||
+            (name === '')) {
+        cb('Invalid parameters: Name is mandatory', null);
+    }
+
+    if (('string' !== typeof password) ||
+            (password === '')) {
+        cb('Invalid parameters: Password is mandatory', null);
+    }
+
+    if ('function' !== typeof cb) {
+        cb('Invalid parameters: Callback is mandatory', null);
+    }
+
+    var credentials = this.compilePassword(password),
+        user = new this.UserModel({
+            email: email,
+            name: name,
+            password: credentials.pass,
+            salt: credentials.salt
+        });
+
+    user.save(cb);
 };
 
 
@@ -70,7 +192,43 @@ UserService.prototype.register = function (email, name, password, cb) {
  * @param {loginCallback} cb Return callback
  */
 UserService.prototype.login = function (email, password, cb) {
+    if (('string' !== typeof email) ||
+            (email === '')) {
+        cb('Invalid parameters: Email is mandatory', null);
+    }
 
+    if (('string' !== typeof password) ||
+            (password === '')) {
+        cb('Invalid parameters: Password is mandatory', null);
+    }
+
+    if ('function' !== typeof cb) {
+        cb('Invalid parameters: Callback is mandatory', null);
+    }
+
+    this.UserModel.findByEmail(email, function (err, docs) {
+        if (err) {
+            cb(err, null);
+            return;
+        }
+
+        if (docs.length === 0) {
+            cb('Invalid credentials', null);
+            return;
+        }
+
+        var thisUser = docs[0],
+            credentials = this.compilePassword(password, thisUser.salt),
+            token = null;
+
+        if (credentials.pass !== thisUser.password) {
+            cb('Invalid credentials', null);
+            return;
+        }
+
+        token = this.generateToken(email);
+        cb(null, token);
+    });
 };
 
 
@@ -81,7 +239,16 @@ UserService.prototype.login = function (email, password, cb) {
  * @param {successCallback} cb Return callback
  */
 UserService.prototype.validateToken = function (token, cb) {
+    if (('string' !== typeof token) ||
+            (token === '')) {
+        cb('Invalid parameters: Token is mandatory', null);
+    }
 
+    if ('function' !== typeof cb) {
+        cb('Invalid parameters: Callback is mandatory', null);
+    }
+
+    this.chechToken(token, cb);
 };
 
 
@@ -92,8 +259,18 @@ UserService.prototype.validateToken = function (token, cb) {
  * @param {string} email User email
  * @param {successCallback} cb Return callback
  */
-UserService.prototype.logout = function (token, email, cb) {
+UserService.prototype.logout = function (email, cb) {
+    if (('string' !== typeof email) ||
+            (email === '')) {
+        cb('Invalid parameters: Email is mandatory', null);
+    }
 
+    if ('function' !== typeof cb) {
+        cb('Invalid parameters: Callback is mandatory', null);
+    }
+
+    this.invalidateToken(email);
+    cb(null, true);
 };
 
 exports = module.exports = UserService;

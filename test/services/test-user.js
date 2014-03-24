@@ -30,11 +30,12 @@ describe('User Services', function () {
             },
             hash: {
                 algorithm: 'pbkdf2',
-                iterations: 1000,
+                iterations: 10000,
                 salt: 16,
                 size: 256
             },
             misc: {
+                tokenSize: 256,
                 tokenExpire: 3600,
                 missingPasswordRetries: 0,
             }
@@ -46,7 +47,7 @@ describe('User Services', function () {
         it('should return error when creating a user without a email', function (done) {
             service.register('', '', '', function (err, success) {
                 should.exist(err);
-                err.message.should.equal('Invalid parameters: Email is mandatory');
+                err.should.equal('Invalid parameters: Email is mandatory');
                 should.not.exist(success);
                 done();
             });
@@ -55,7 +56,7 @@ describe('User Services', function () {
         it('should return error when creating a user without a name', function (done) {
             service.register('test@email.com', '', '', function (err, success) {
                 should.exist(err);
-                err.message.should.equal('Invalid parameters: Name is mandatory');
+                err.should.equal('Invalid parameters: Name is mandatory');
                 should.not.exist(success);
                 done();
             });
@@ -64,7 +65,7 @@ describe('User Services', function () {
         it('should return error when creating a user without a password', function (done) {
             service.register('test@email.com', 'Test User', '', function (err, success) {
                 should.exist(err);
-                err.message.should.equal('Invalid parameters: Name is mandatory');
+                err.should.equal('Invalid parameters: Password is mandatory');
                 should.not.exist(success);
                 done();
             });
@@ -83,7 +84,7 @@ describe('User Services', function () {
         it('should return error when try to login without a email', function (done) {
             service.login('', '', function (err, token) {
                 should.exist(err);
-                err.message.should.equal('Invalid credentials');
+                err.should.equal('Invalid credentials');
                 should.not.exist(token);
                 done();
             });
@@ -92,7 +93,7 @@ describe('User Services', function () {
         it('should return error when try to login without a password', function (done) {
             service.login('test@email.com', '', function (err, token) {
                 should.exist(err);
-                err.message.should.equal('Invalid credentials');
+                err.should.equal('Invalid credentials');
                 should.not.exist(token);
                 done();
             });
@@ -101,7 +102,7 @@ describe('User Services', function () {
         it('should return error when try to login with wrong password', function (done) {
             service.login('test@email.com', 'PASS', function (err, token) {
                 should.exist(err);
-                err.message.should.equal('Invalid credentials');
+                err.should.equal('Invalid credentials');
                 should.not.exist(token);
                 done();
             });
@@ -138,47 +139,20 @@ describe('User Services', function () {
     });
 
     describe('Logout user', function () {
-        it('should return error when try to logout without a token', function (done) {
-            service.logout('', '', function (err, success) {
-                should.exist(err);
-                err.message.should.equal('Invalid parameters: Token is mandatory');
-                should.not.exist(success);
-                done();
-            });
-        });
-
         it('should return error when try to logout without a email', function (done) {
-            service.logout('XXXXXXX', '', function (err, success) {
+            service.logout('', function (err, success) {
                 should.exist(err);
-                err.message.should.equal('Invalid parameters: Email is mandatory');
-                should.not.exist(success);
-                done();
-            });
-        });
-
-        it('should return error when try to logout a user with invalid token', function (done) {
-            service.logout('XXXXXXX', 'test2@email.com', function (err, success) {
-                should.exist(err);
-                err.message.should.equal('Invalid token');
+                err.should.equal('Invalid parameters: Email is mandatory');
                 should.not.exist(success);
                 done();
             });
         });
 
         it('should return success when try to logout a user', function (done) {
-            service.logout(securityToken, 'test@email.com', 'PASSWORD', function (err, success) {
+            service.logout('test@email.com', 'PASSWORD', function (err, success) {
                 should.not.exist(err);
                 should.exist(success);
                 success.should.be.ok;
-                done();
-            });
-        });
-
-        it('should return not success when try to logout a not logged in user', function (done) {
-            service.logout('test@email.com', function (err, success) {
-                should.exist(err);
-                err.message.should.equal('Invalid token');
-                should.not.exist(success);
                 done();
             });
         });
