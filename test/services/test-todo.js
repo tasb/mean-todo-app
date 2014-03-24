@@ -82,7 +82,7 @@ describe('User Services', function () {
                 should.exist(priorities);
                 priorities.should.be.instanceof(Array).and.have.lengthOf(2);
 
-                service.deletePriority(priorities[1], function (err, success) {
+                service.deletePriority(priorities[1]._id, function (err, success) {
                     should.not.exist(err);
                     should.exist(success);
 
