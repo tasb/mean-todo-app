@@ -42,21 +42,30 @@ var TodoService = function (opts) {
 };
 
 TodoService.prototype.newPriority = function (name, order, color, cb) {
+    if ('function' === typeof name) {
+        cb = name;
+        name = null;
+    }
+
+    if ('function' === typeof order) {
+        cb = order;
+        order = null;
+    }
+
+    if ('function' === typeof color) {
+        cb = color;
+        color = null;
+    }
+
     if (('string' !== typeof name) ||
             (name === '')) {
         cb('Invalid parameters: Name is mandatory', null);
         return;
     }
 
-    if (('number' !== typeof order) ||
-            (order === '')) {
+    if (!order || ('number' !== typeof order)) {
         cb('Invalid parameters: Order is mandatory', null);
         return;
-    }
-
-    if ('function' === typeof color) {
-        cb = color;
-        color = null;
     }
 
     if ('function' !== typeof cb) {
@@ -67,7 +76,7 @@ TodoService.prototype.newPriority = function (name, order, color, cb) {
     var priority = new this.PriorityModel({
         name: name,
         order: order,
-        color: color
+        color: color || ''
     });
 
     priority.save(cb);
@@ -82,5 +91,103 @@ TodoService.prototype.deletePriority = function (id, cb) {
         _id: id
     }, cb);
 };
+
+TodoService.prototype.newTodoList = function (userId, name, cb) {
+    if ('function' === typeof userId) {
+        cb = userId;
+        userId = null;
+    }
+
+    if ('function' === typeof name) {
+        cb = name;
+        name = null;
+    }
+
+    if (!userId) {
+        cb('Invalid parameters: User is mandatory', null);
+        return;
+    }
+
+    if (('string' !== typeof name) ||
+            (name === '')) {
+        cb('Invalid parameters: Name is mandatory', null);
+        return;
+    }
+
+    if ('function' !== typeof cb) {
+        cb('Invalid parameters: Callback is mandatory', null);
+        return;
+    }
+
+    var todolist = new this.TodoListModel({
+        user: userId,
+        name: name
+    });
+
+    todolist.save(cb);
+};
+
+TodoService.prototype.getTodoListByUser = function (userid, cb) {
+    this.TodoListModel.findByUser({
+        _id: userid
+    }, cb);
+};
+
+TodoService.prototype.deleteTodoList = function (id, cb) {
+    this.TodoListModel.remove({
+        _id: id
+    }, cb);
+};
+
+TodoService.prototype.newTodo = function (listId, text, priorityId, dueDate, cb) {
+    if ('function' === typeof listId) {
+        cb = listId;
+        listId = null;
+    }
+
+    if ('function' === typeof text) {
+        cb = text;
+        text = null;
+    }
+
+    if ('function' === typeof priorityId) {
+        cb = priorityId;
+        priorityId = null;
+    }
+
+    if ('function' === typeof dueDate) {
+        cb = dueDate;
+        dueDate = null;
+    }
+
+    if (!listId) {
+        cb('Invalid parameters: List is mandatory', null);
+        return;
+    }
+
+    if (('string' !== typeof text) ||
+            (text === '')) {
+        cb('Invalid parameters: Text is mandatory', null);
+        return;
+    }
+
+    var todo = new this.TodoModel({
+        list: listId,
+        text: text,
+        priority: priorityId,
+        dueDate: dueDate
+    });
+
+    todo.save(cb);
+};
+
+
+getTodosFromList
+getTodosFromUser
+updateTodo
+getTodosFromListNotCompleted
+getTodosFromListCompleted
+deleteTodo
+
 
 exports = module.exports = TodoService;

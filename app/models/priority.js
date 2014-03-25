@@ -40,9 +40,9 @@ PrioritySchema.statics.findAll = function (cb) {
     this.find({ }).sort('order').exec(cb);
 };
 
-PrioritySchema.statics.cleanUo = function () {
-    User.remove({}).exec();
-}
+PrioritySchema.statics.cleanUp = function () {
+    this.remove({}).exec();
+};
 
 PrioritySchema.path('name').index({ unique: true });
 PrioritySchema.path('order').index({ unique: true });

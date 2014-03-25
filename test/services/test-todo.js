@@ -3,19 +3,30 @@
 var should = require('should'),
     mongoose = require('mongoose'),
     TodoService = require('../../app/services/todo.js'),
-    UserSchema = require('../../app/models/user.js');
+    TodoSchema = require('../../app/models/todo.js'),
+    TodoListSchema = require('../../app/models/todo-list.js'),
+    UserSchema = require('../../app/models/user.js'),
+    PrioritySchema = require('../../app/models/priority.js');
 
-describe('User Services', function () {
-    var service,
+describe('TODO Services', function () {
+    var db,
+        UserModel,
+        PriorityModel,
+        TodoListModel,
+        TodoModel,
+        service,
         user,
         list,
         priority;
 
     function cleanUp() {
+        UserModel.remove({}).exec();
+        PriorityModel.remove({}).exec();
+        TodoModel.remove({}).exec();
+        TodoListModel.remove({}).exec();
     }
 
     before(function () {
-        cleanUp();
         console.info = function () {
         };
         service = new TodoService({
@@ -26,15 +37,21 @@ describe('User Services', function () {
                 database: 'todo-test'
             }
         });
-        var db = mongoose.createConnection('mongodb://@127.0.0.1:27017/todo-test'),
-            UserModel = db.model('user', UserSchema);
+        db = mongoose.createConnection('mongodb://@127.0.0.1:27017/todo-test');
+        UserModel = db.model('user', UserSchema);
+        PriorityModel = db.model('priority', PrioritySchema);
+        TodoModel = db.model('todo', TodoSchema);
+        TodoListModel = db.model('todolist', TodoListSchema);
+
+        cleanUp();
+
         user = new UserModel({ email: 'test@email.com', name: 'Test user', password: 'PASSWORD', salt: 'SALT' });
         user.save();
     });
 
     describe('Create and Delete Priorities', function () {
         it('should return error when try to create a priority without a name', function (done) {
-            service.newPriority('', 1, '#FF00000', function (err, success) {
+            service.newPriority('', 1, '#FF0000', function (err, success) {
                 should.exist(err);
                 err.should.equal('Invalid parameters: Name is mandatory');
                 should.not.exist(success);
@@ -42,7 +59,7 @@ describe('User Services', function () {
             });
         });
 
-        it('should return error when try to create a priority without a name', function (done) {
+        it('should return error when try to create a priority without an order number', function (done) {
             service.newPriority('High', function (err, success) {
                 should.exist(err);
                 err.should.equal('Invalid parameters: Order is mandatory');
@@ -52,7 +69,7 @@ describe('User Services', function () {
         });
 
         it('should return success when creating a priority', function (done) {
-            service.newPriority('Urgent', 1, '#FF00000', function (err, success) {
+            service.newPriority('Urgent', 1, '#FF0000', function (err, success) {
                 should.not.exist(err);
                 should.exist(success);
                 done();
@@ -108,7 +125,7 @@ describe('User Services', function () {
         });
 
         it('should return error when try to create a TODO list without a name', function (done) {
-            service.newTodoList(user, function (err, success) {
+            service.newTodoList(user._id, function (err, success) {
                 should.exist(err);
                 err.should.equal('Invalid parameters: Name is mandatory');
                 should.not.exist(success);
@@ -117,7 +134,7 @@ describe('User Services', function () {
         });
 
         it('should return success when creating a TODO List', function (done) {
-            service.newTodoList(user, 'Shopping Cart', function (err, success) {
+            service.newTodoList(user._id, 'Shopping Cart', function (err, success) {
                 should.not.exist(err);
                 should.exist(success);
                 done();
@@ -125,7 +142,7 @@ describe('User Services', function () {
         });
 
         it('should return one record when listing all TODO list from one user', function (done) {
-            service.getTodoListByUser(user, function (err, lists) {
+            service.getTodoListByUser(user._id, function (err, lists) {
                 should.not.exist(err);
                 should.exist(lists);
                 lists.should.be.instanceof(Array).and.have.lengthOf(1);
@@ -134,7 +151,7 @@ describe('User Services', function () {
         });
 
         it('should return success when deleting a TODO list', function (done) {
-            service.getTodoListByUser(user, function (err, lists) {
+            service.getTodoListByUser(user._id, function (err, lists) {
                 should.not.exist(err);
                 should.exist(lists);
                 lists.should.be.instanceof(Array).and.have.lengthOf(1);
@@ -143,7 +160,7 @@ describe('User Services', function () {
                     should.not.exist(err);
                     should.exist(success);
 
-                    service.getTodoListByUser(user, function (err, lists) {
+                    service.getTodoListByUser(user._id, function (err, lists) {
                         should.not.exist(err);
                         should.exist(lists);
                         lists.should.be.instanceof(Array).and.have.lengthOf(0);
@@ -166,7 +183,7 @@ describe('User Services', function () {
         });
 
         it('should return success when try to create a TODO only with Text', function (done) {
-            service.newTodo(list, 'Buy Apples', function (err, todo) {
+            service.newTodo(list._id, 'Buy Apples', function (err, todo) {
                 should.not.exist(err);
                 should.exist(todo);
                 todo.text.should.equal('Buy Apples');
@@ -175,7 +192,7 @@ describe('User Services', function () {
         });
 
         it('should return success when try to create a TODO with Text and priority', function (done) {
-            service.newTodo(list, 'Buy Bananas', priority, function (err, todo) {
+            service.newTodo(list._id, 'Buy Bananas', priority._id, function (err, todo) {
                 should.not.exist(err);
                 should.exist(todo);
                 todo.text.should.equal('Buy Bananas');
@@ -185,7 +202,7 @@ describe('User Services', function () {
         });
 
         it('should return success when try to create a TODO with Text, priority and due date', function (done) {
-            service.newTodo(list, 'Buy Strawberries', priority, new Date(), function (err, todo) {
+            service.newTodo(list._id, 'Buy Strawberries', priority._id, new Date(), function (err, todo) {
                 should.not.exist(err);
                 should.exist(todo);
                 todo.text.should.equal('Buy Strawberries');
@@ -195,7 +212,7 @@ describe('User Services', function () {
         });
 
         it('should return three records when listing all TODO list from one list', function (done) {
-            service.getTodosFromList(list, function (err, todos) {
+            service.getTodosFromList(list._id, function (err, todos) {
                 should.not.exist(err);
                 should.exist(todos);
                 todos.should.be.instanceof(Array).and.have.lengthOf(3);
@@ -204,7 +221,7 @@ describe('User Services', function () {
         });
 
         it('should return three records when listing all TODO list from one user', function (done) {
-            service.getTodosFromUser(user, function (err, todos) {
+            service.getTodosFromUser(user._id, function (err, todos) {
                 should.not.exist(err);
                 should.exist(todos);
                 todos.should.be.instanceof(Array).and.have.lengthOf(3);
@@ -213,7 +230,7 @@ describe('User Services', function () {
         });
 
         it('should return success editing a TODO', function (done) {
-            service.getTodosFromUser(user, function (err, todos) {
+            service.getTodosFromUser(user._id, function (err, todos) {
                 should.not.exist(err);
                 should.exist(todos);
                 todos.should.be.instanceof(Array).and.have.lengthOf(3);
@@ -230,7 +247,7 @@ describe('User Services', function () {
         });
 
         it('should return 2 records when listing all TODOs not completed from a list', function (done) {
-            service.getTodosFromListNotCompleted(list, function (err, todos) {
+            service.getTodosFromListNotCompleted(list._id, function (err, todos) {
                 should.not.exist(err);
                 should.exist(todos);
                 todos.should.be.instanceof(Array).and.have.lengthOf(2);
@@ -239,7 +256,7 @@ describe('User Services', function () {
         });
 
         it('should return 1 record when listing all TODOs completed from a list', function (done) {
-            service.getTodosFromListCompleted(list, function (err, todos) {
+            service.getTodosFromListCompleted(list._id, function (err, todos) {
                 should.not.exist(err);
                 should.exist(todos);
                 todos.should.be.instanceof(Array).and.have.lengthOf(1);
@@ -248,16 +265,16 @@ describe('User Services', function () {
         });
 
         it('should return success when deleting a TODO', function (done) {
-            service.getTodosFromListCompleted(list, function (err, todos) {
+            service.getTodosFromListCompleted(list._id, function (err, todos) {
                 should.not.exist(err);
                 should.exist(todos);
                 todos.should.be.instanceof(Array).and.have.lengthOf(1);
 
-                service.deleteTodo(todos[0], function (err, success) {
+                service.deleteTodo(todos[0]._id, function (err, success) {
                     should.not.exist(err);
                     should.exist(success);
 
-                    service.getTodosFromListCompleted(user, function (err, lists) {
+                    service.getTodosFromListCompleted(list._id, function (err, lists) {
                         should.not.exist(err);
                         should.exist(lists);
                         lists.should.be.instanceof(Array).and.have.lengthOf(0);
