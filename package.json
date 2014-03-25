@@ -24,7 +24,8 @@
     "mongoose-validate": "0.0.x",
     "bunyan": "0.22.x",
     "redis": "~0.10.1",
-    "hiredis": "~0.1.16"
+    "hiredis": "~0.1.16",
+    "underscore": "^1.6.0"
   },
   "devDependencies": {
     "grunt": "0.4.x",

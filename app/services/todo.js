@@ -1,6 +1,7 @@
 'use strict';
 
 var mongoose = require('mongoose'),
+    util = require('util'),
     PrioritySchema = require('../models/priority.js'),
     TodoListSchema = require('../models/todo-list.js'),
     TodoSchema = require('../models/todo.js');
@@ -160,6 +161,11 @@ TodoService.prototype.newTodo = function (listId, text, priorityId, dueDate, cb)
         dueDate = null;
     }
 
+    if (util.isDate(priorityId)) {
+        dueDate = priorityId;
+        priorityId = null;
+    }
+
     if (!listId) {
         cb('Invalid parameters: List is mandatory', null);
         return;
@@ -172,7 +178,7 @@ TodoService.prototype.newTodo = function (listId, text, priorityId, dueDate, cb)
     }
 
     var todo = new this.TodoModel({
-        list: listId,
+        todoList: listId,
         text: text,
         priority: priorityId,
         dueDate: dueDate
@@ -181,13 +187,92 @@ TodoService.prototype.newTodo = function (listId, text, priorityId, dueDate, cb)
     todo.save(cb);
 };
 
+TodoService.prototype.getTodosFromList = function (listId, cb) {
+    if ('function' === typeof listId) {
+        cb = listId;
+        listId = null;
+    }
 
-getTodosFromList
-getTodosFromUser
-updateTodo
-getTodosFromListNotCompleted
-getTodosFromListCompleted
-deleteTodo
+    if (!listId) {
+        cb('Invalid parameters: List is mandatory', null);
+        return;
+    }
 
+    this.TodoModel.findByTodoList({
+        _id: listId
+    }, cb);
+};
+
+TodoService.prototype.getTodosFromUser = function (userId, cb) {
+    if ('function' === typeof userId) {
+        cb = userId;
+        userId = null;
+    }
+
+    if (!userId) {
+        cb('Invalid parameters: User is mandatory', null);
+        return;
+    }
+
+    this.TodoModel.findByUser({
+        _id: userId
+    }, cb);
+};
+
+TodoService.prototype.updateTodo = function (todo, cb) {
+    if ('function' === typeof todo) {
+        cb = todo;
+        todo = null;
+    }
+
+    if (!todo) {
+        cb('Invalid parameters: TODO is mandatory', null);
+        return;
+    }
+
+    todo.save(cb);
+};
+
+TodoService.prototype.getTodosFromListNotCompleted = function (listId, cb) {
+    if ('function' === typeof listId) {
+        cb = listId;
+        listId = null;
+    }
+
+    if (!listId) {
+        cb('Invalid parameters: List is mandatory', null);
+        return;
+    }
+
+    this.TodoModel.findByTodoListWithOpts({
+        _id: listId
+    }, {
+        completed: false
+    }, cb);
+};
+
+TodoService.prototype.getTodosFromListCompleted = function (listId, cb) {
+    if ('function' === typeof listId) {
+        cb = listId;
+        listId = null;
+    }
+
+    if (!listId) {
+        cb('Invalid parameters: List is mandatory', null);
+        return;
+    }
+
+    this.TodoModel.findByTodoListWithOpts({
+        _id: listId
+    }, {
+        completed: true
+    }, cb);
+};
+
+TodoService.prototype.deleteTodo = function (id, cb) {
+    this.TodoModel.remove({
+        _id: id
+    }, cb);
+};
 
 exports = module.exports = TodoService;

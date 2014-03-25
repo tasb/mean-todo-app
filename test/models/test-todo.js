@@ -140,6 +140,15 @@ describe('TODO Model', function () {
             });
         });
 
+        // it('should return 3 records when search TODO by user', function (done) {
+        //     Todo.findByUser(mockUser, function (err, docs) {
+        //         should.not.exist(err);
+        //         should.exist(docs);
+        //         docs.should.be.instanceof(Array).and.have.lengthOf(3);
+        //         done();
+        //     });
+        // });
+
         it('should return zero records when search TODO by text "Sell"', function (done) {
             Todo.findByText('Sell', function (err, docs) {
                 should.not.exist(err);
