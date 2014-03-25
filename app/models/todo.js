@@ -1,6 +1,7 @@
 'use strict';
 
 var mongoose = require('mongoose'),
+    _ = require('underscore'),
     Schema = mongoose.Schema;
 
 var TodoSchema = new Schema({
@@ -39,19 +40,28 @@ var TodoSchema = new Schema({
 });
 
 TodoSchema.statics.findByText = function (text, cb) {
-    this.find({ text: new RegExp(text, 'i') }).sort('text').exec(cb);
+    this.find({ text: new RegExp(text, 'i') }).populate('priority').sort('text').exec(cb);
 };
 
 TodoSchema.statics.findByTodoList = function (todoList, cb) {
-    this.find({ todoList: todoList._id }).sort('text').exec(cb);
+    this.find({ todoList: todoList._id }).populate('priority').sort('text').exec(cb);
+};
+
+TodoSchema.statics.findByUser = function (user, cb) {
+    this.find({ 'todoList.user': user._id }).populate('priority').sort('text').exec(cb);
+};
+
+TodoSchema.statics.findByTodoListWithOpts = function (todoList, opts, cb) {
+    var criteria = _.extend({ todoList: todoList }, opts);
+    this.find(criteria).populate('priority').sort('text').exec(cb);
 };
 
 TodoSchema.statics.findByTextOnTodoList = function (text, todoList, cb) {
-    this.find({ todoList: todoList._id, text: new RegExp(text, 'i') }).sort('text').exec(cb);
+    this.find({ todoList: todoList._id, text: new RegExp(text, 'i') }).populate('priority').sort('text').exec(cb);
 };
 
 TodoSchema.statics.findAll = function (cb) {
-    this.find({ }).sort('order').exec(cb);
+    this.find({ }).populate('priority').sort('order').exec(cb);
 };
 
 exports = module.exports = TodoSchema;
