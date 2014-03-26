@@ -69,7 +69,7 @@ describe('REST API Testing', function () {
             var body = {
                 email: 'test@email.com',
                 name: 'Test user',
-                pass: 'PASSWORD'
+                password: 'PASSWORD'
             };
 
             request(url)
@@ -95,7 +95,7 @@ describe('REST API Testing', function () {
             var body = {
                 email: 'test2@email.com',
                 name: 'Test user',
-                pass: 'PASSWORD'
+                password: 'PASSWORD'
             };
             request(url)
                 .post('/api/user')
@@ -134,7 +134,7 @@ describe('REST API Testing', function () {
             var body = {
                 email: 'test3@email.com',
                 name: 'Test user 3',
-                pass: 'PASSWORD'
+                password: 'PASSWORD'
             };
 
             request(url)
@@ -146,7 +146,7 @@ describe('REST API Testing', function () {
                     }
                     var loginBody = {
                         email: res.body.email,
-                        pass: 'PASSWORD'
+                        password: 'PASSWORD'
                     };
                     request(url)
                         .post('/api/user/login')
@@ -209,7 +209,7 @@ describe('REST API Testing', function () {
             var body = {
                 email: 'testTodoLists@email.com',
                 name: 'Test TODO Lists',
-                pass: 'PASSWORD'
+                password: 'PASSWORD'
             };
 
             request(url)
@@ -223,7 +223,7 @@ describe('REST API Testing', function () {
 
                     var loginBody = {
                         email: res.body.email,
-                        pass: 'PASSWORD'
+                        password: 'PASSWORD'
                     };
                     request(url)
                         .post('/api/user/login')
@@ -309,7 +309,7 @@ describe('REST API Testing', function () {
             var body = {
                 email: 'testTodos@email.com',
                 name: 'Test TODOs',
-                pass: 'PASSWORD'
+                password: 'PASSWORD'
             };
 
             request(url)
@@ -323,7 +323,7 @@ describe('REST API Testing', function () {
 
                     var loginBody = {
                         email: res.body.email,
-                        pass: 'PASSWORD'
+                        password: 'PASSWORD'
                     };
                     request(url)
                         .post('/api/user/login')
