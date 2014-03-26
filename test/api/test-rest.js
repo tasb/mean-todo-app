@@ -381,8 +381,111 @@ describe('REST API Testing', function () {
 
         describe('GET on /api/user/:id/todolist/:id/todo', function () {
             it('should return a list of todos from todo list', function (done) {
+                request(url)
+                    .get('/api/user/' + userId + '/todolist/' + listId + '/todo?token=' + token)
+                    .expect('Content-Type', /json/)
+                    .expect(200) //Status code
+                    .end(function (err, res) {
+                        if (err) {
+                            throw err;
+                        }
+                        should.not.exist(err);
+                        res.body.should.be.instanceof(Array).and.have.lengthOf(1);
+                        res.body[0].text.should.equal('Buy Apples');
+                        done();
+                    });
 
+            });
+        });
 
+        describe('PUT on /api/user/:id/todolist/:id/todo/:id', function () {
+            var todoId;
+
+            before(function (done) {
+                var body = {
+                    text: 'Buy Starwberries',
+                    token: token
+                };
+
+                request(url)
+                    .post('/api/user/' + userId + '/todolist/' + listId + '/todo')
+                    .send(body)
+                    .end(function (err, res) {
+                        if (err) {
+                            throw err;
+                        }
+                        todoId = res.body._id;
+                        done();
+                    });
+            });
+
+            it('should return a update a todo entry', function (done) {
+                var dueDate = new Date(),
+                    updateBody = {
+                        text: 'Buy Bananas',
+                        dueDate: dueDate,
+                        completed: true,
+                        token: token
+                    };
+
+                request(url)
+                    .put('/api/user/' + userId + '/todolist/' + listId + '/todo/' + todoId)
+                    .send(updateBody)
+                    .expect('Content-Type', /json/)
+                    .expect(200) //Status code
+                    .end(function (err, res) {
+                        if (err) {
+                            throw err;
+                        }
+                        should.not.exist(err);
+                        res.body.text.should.equal('Buy Bananas');
+                        res.body.completed.should.be.ok;
+                        res.body.dueDate.should.equal(dueDate);
+                        done();
+                    });
+
+            });
+        });
+
+        describe('DELETE on /api/user/:id/todolist/:id/todo/:id', function () {
+            var todoId;
+
+            before(function (done) {
+                var body = {
+                    text: 'Buy Peaches',
+                    token: token
+                };
+
+                request(url)
+                    .post('/api/user/' + userId + '/todolist/' + listId + '/todo')
+                    .send(body)
+                    .end(function (err, res) {
+                        if (err) {
+                            throw err;
+                        }
+                        todoId = res.body._id;
+                        done();
+                    });
+            });
+
+            it('should return a update a todo entry', function (done) {
+                var deleteBody = {
+                    token: token
+                };
+
+                request(url)
+                    .delete('/api/user/' + userId + '/todolist/' + listId + '/todo/' + todoId)
+                    .send(deleteBody)
+                    .expect('Content-Type', /json/)
+                    .expect(200) //Status code
+                    .end(function (err, res) {
+                        if (err) {
+                            throw err;
+                        }
+                        should.not.exist(err);
+                        res.body.success.should.be.ok;
+                        done();
+                    });
             });
         });
     });
