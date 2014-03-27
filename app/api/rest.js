@@ -31,6 +31,12 @@ var RestAPI = function (opts, server, handlers) {
         res.send(code).send(body);
     };
 
+    self.sendResponse = function (res, body) {
+        res.set('Content-Type', 'aplication/json');
+        res.type('json');
+        res.send(200, body);
+    };
+
     self.checkPermission = function (userId, token, cb) {
         self.handlers.user.getUser(userId, function (err, user) {
             if (err) {
@@ -71,9 +77,7 @@ var RestAPI = function (opts, server, handlers) {
                 return;
             }
 
-            res.set('Content-Type', 'aplication/json');
-            res.type('json');
-            res.send(200, user);
+            self.sendResponse(res, user);
         });
     };
 
@@ -94,9 +98,7 @@ var RestAPI = function (opts, server, handlers) {
                 return;
             }
 
-            res.set('Content-Type', 'aplication/json');
-            res.type('json');
-            res.send(200, { token: token });
+            self.sendResponse(res, { token: token });
         });
     };
 
@@ -130,9 +132,7 @@ var RestAPI = function (opts, server, handlers) {
                     return;
                 }
 
-                res.set('Content-Type', 'aplication/json');
-                res.type('json');
-                res.send(200, { success: success });
+                self.sendResponse(res, { success: success });
             });
         });
     };
@@ -165,9 +165,7 @@ var RestAPI = function (opts, server, handlers) {
                     return;
                 }
 
-                res.set('Content-Type', 'aplication/json');
-                res.type('json');
-                res.send(200, list);
+                self.sendResponse(res, list);
             });
 
         });
@@ -196,9 +194,7 @@ var RestAPI = function (opts, server, handlers) {
                     return;
                 }
 
-                res.set('Content-Type', 'aplication/json');
-                res.type('json');
-                res.send(200, results);
+                self.sendResponse(res, results);
             });
 
         });
@@ -227,9 +223,7 @@ var RestAPI = function (opts, server, handlers) {
                     return;
                 }
 
-                res.set('Content-Type', 'aplication/json');
-                res.type('json');
-                res.send(200, list);
+                self.sendResponse(res, list);
             });
 
         });
@@ -263,9 +257,7 @@ var RestAPI = function (opts, server, handlers) {
                     return;
                 }
 
-                res.set('Content-Type', 'aplication/json');
-                res.type('json');
-                res.send(200, todo);
+                self.sendResponse(res, todo);
             });
 
         });
@@ -294,9 +286,7 @@ var RestAPI = function (opts, server, handlers) {
                     return;
                 }
 
-                res.set('Content-Type', 'aplication/json');
-                res.type('json');
-                res.send(200, todos);
+                self.sendResponse(res, todos);
             });
 
         });
@@ -325,9 +315,7 @@ var RestAPI = function (opts, server, handlers) {
                     return;
                 }
 
-                res.set('Content-Type', 'aplication/json');
-                res.type('json');
-                res.send(200, todo);
+                self.sendResponse(res, todo);
             });
 
         });
@@ -356,9 +344,7 @@ var RestAPI = function (opts, server, handlers) {
                     return;
                 }
 
-                res.set('Content-Type', 'aplication/json');
-                res.type('json');
-                res.send(200, todo);
+                self.sendResponse(res, todo);
             });
 
         });
@@ -387,9 +373,7 @@ var RestAPI = function (opts, server, handlers) {
                     return;
                 }
 
-                res.set('Content-Type', 'aplication/json');
-                res.type('json');
-                res.send(200, { success: success });
+                self.sendResponse(res, { success: success });
             });
 
         });
