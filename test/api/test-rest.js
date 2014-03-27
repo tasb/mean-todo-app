@@ -3,6 +3,7 @@
 var should = require('should'),
     request = require('supertest'),
     mongoose = require('mongoose'),
+    express = require('express'),
     TodoSchema = require('../../app/models/todo.js'),
     TodoListSchema = require('../../app/models/todo-list.js'),
     UserSchema = require('../../app/models/user.js'),
@@ -14,7 +15,8 @@ describe('REST API Testing', function () {
     var userSrv,
         todoSrv,
         rest,
-        url;
+        url,
+        server;
 
     function cleanUp() {
         var db = mongoose.createConnection('mongodb://@127.0.0.1:27017/todo-test'),
@@ -29,6 +31,17 @@ describe('REST API Testing', function () {
 
     before(function () {
         console.info = function () { };
+
+        server = express();
+
+        server.configure(function () {
+            server.use(express.bodyParser());
+            server.use(express.methodOverride());
+            server.use(server.router);
+            server.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
+        });
+        server.listen(9000);
+
         url = 'http://127.0.0.1:9000';
         userSrv = new UserService({
             log: console,
@@ -65,8 +78,8 @@ describe('REST API Testing', function () {
 
         rest = new RestAPI({
             log: console,
-            port: 9000
-        }, {
+            AuthToken: 'X-Auth-Token'
+        }, server, {
             user: userSrv,
             todo: todoSrv
         });
@@ -188,18 +201,19 @@ describe('REST API Testing', function () {
                 .expect(401) //Status code
                 .end(function (err, res) {
                     should.not.exist(err);
+                    res.statusCode.should.equal(401);
                     done();
                 });
         });
 
         it('should return success when logout a logged user', function (done) {
             var body = {
-                email: 'test3@email.com',
-                token: token
+                email: 'test3@email.com'
             };
 
             request(url)
                 .post('/api/user/logout')
+                .set('X-Auth-Token', token)
                 .send(body)
                 .expect('Content-Type', /json/)
                 .expect(200) //Status code
@@ -248,11 +262,10 @@ describe('REST API Testing', function () {
                 });
         });
 
-        describe('POST on /api/user/:id/todolist', function () {
+        describe('POST on /api/user/:userid/todolist', function () {
             it('should return error about missing security token', function (done) {
                 var body = {
-                        name: 'Shopping List',
-                        token: token
+                        name: 'Shopping List'
                     };
 
                 request(url)
@@ -260,21 +273,21 @@ describe('REST API Testing', function () {
                     .send(body)
                     .expect('Content-Type', /json/)
                     .expect(401) //Status code
-                    .end(function (err) {
-                        should.exist(err);
-                        err.should.equal('Unauthorized');
+                    .end(function (err, res) {
+                        should.not.exist(err);
+                        res.statusCode.should.equal(401);
                         done();
                     });
             });
 
             it('should create a new todolist', function (done) {
                 var body = {
-                    name: 'Shopping List',
-                    token: token
+                    name: 'Shopping List'
                 };
 
                 request(url)
                     .post('/api/user/' + userId + '/todolist')
+                    .set('X-Auth-Token', token)
                     .send(body)
                     .expect('Content-Type', /json/)
                     .expect(200) //Status code
@@ -290,11 +303,12 @@ describe('REST API Testing', function () {
             });
         });
 
-        describe('GET on /api/user/:id/todolist', function () {
+        describe('GET on /api/user/:userid/todolist', function () {
             it('should return a list of todolist from user', function (done) {
 
                 request(url)
-                    .get('/api/user/' + userId + '/todolist?token=' + token)
+                    .get('/api/user/' + userId + '/todolist')
+                    .set('X-Auth-Token', token)
                     .expect('Content-Type', /json/)
                     .expect(200) //Status code
                     .end(function (err, res) {
@@ -305,6 +319,35 @@ describe('REST API Testing', function () {
                         res.body.should.be.instanceof(Array).and.have.lengthOf(1);
                         res.body[0].name.should.equal('Shopping List');
                         done();
+                    });
+            });
+        });
+
+        describe('GET on /api/user/:userid/todolist/:todolistid', function () {
+            it('should return "Shopping List" todolist', function (done) {
+
+                request(url)
+                    .get('/api/user/' + userId + '/todolist')
+                    .set('X-Auth-Token', token)
+                    .end(function (err, res) {
+                        if (err) {
+                            throw err;
+                        }
+                        var todolistId = res.body[0]._id;
+                        request(url)
+                            .get('/api/user/' + userId + '/todolist/' + todolistId)
+                            .set('X-Auth-Token', token)
+                            .expect('Content-Type', /json/)
+                            .expect(200) //Status code
+                            .end(function (err, res) {
+                                if (err) {
+                                    throw err;
+                                }
+                                should.not.exist(err);
+                                res.body.name.should.equal('Shopping List');
+                                res.body._id.should.equal(todolistId);
+                                done();
+                            });
                     });
             });
         });
@@ -345,12 +388,12 @@ describe('REST API Testing', function () {
                             token = res.body.token;
 
                             var listBody = {
-                                name: 'Shopping List',
-                                token: token
+                                name: 'Shopping List'
                             };
 
                             request(url)
                                 .post('/api/user/' + userId + '/todolist')
+                                .set('X-Auth-Token', token)
                                 .send(listBody)
                                 .end(function (err, res) {
                                     if (err) {
@@ -359,21 +402,19 @@ describe('REST API Testing', function () {
                                     listId = res.body._id;
                                     done();
                                 });
-
-                            done();
                         });
                 });
         });
 
-        describe('POST on /api/user/:id/todolist/:id/todo', function () {
+        describe('POST on /api/user/:userid/todolist/:todolistid/todo', function () {
             it('should create a new todo', function (done) {
                 var body = {
-                    text: 'Buy Apples',
-                    token: token
+                    text: 'Buy Apples'
                 };
 
                 request(url)
                     .post('/api/user/' + userId + '/todolist/' + listId + '/todo')
+                    .set('X-Auth-Token', token)
                     .send(body)
                     .expect('Content-Type', /json/)
                     .expect(200) //Status code
@@ -389,10 +430,11 @@ describe('REST API Testing', function () {
             });
         });
 
-        describe('GET on /api/user/:id/todolist/:id/todo', function () {
+        describe('GET on /api/user/:userid/todolist/:todolistid/todo', function () {
             it('should return a list of todos from todo list', function (done) {
                 request(url)
-                    .get('/api/user/' + userId + '/todolist/' + listId + '/todo?token=' + token)
+                    .get('/api/user/' + userId + '/todolist/' + listId + '/todo')
+                    .set('X-Auth-Token', token)
                     .expect('Content-Type', /json/)
                     .expect(200) //Status code
                     .end(function (err, res) {
@@ -408,17 +450,48 @@ describe('REST API Testing', function () {
             });
         });
 
-        describe('PUT on /api/user/:id/todolist/:id/todo/:id', function () {
+        describe('GET on /api/user/:userid/todolist/:todolistid/todo/:todoid', function () {
+            it('should return details of a todo entry', function (done) {
+                request(url)
+                    .get('/api/user/' + userId + '/todolist/' + listId + '/todo')
+                    .set('X-Auth-Token', token)
+                    .end(function (err, res) {
+                        if (err) {
+                            throw err;
+                        }
+
+                        var todoId = res.body[0]._id;
+
+                        request(url)
+                            .get('/api/user/' + userId + '/todolist/' + listId + '/todo/' + todoId)
+                            .set('X-Auth-Token', token)
+                            .expect('Content-Type', /json/)
+                            .expect(200) //Status code
+                            .end(function (err, res) {
+                                if (err) {
+                                    throw err;
+                                }
+                                should.not.exist(err);
+                                res.body.text.should.equal('Buy Apples');
+                                res.body._id.should.equal(todoId);
+                                done();
+                            });
+                    });
+
+            });
+        });
+
+        describe('PUT on /api/user/:userid/todolist/:todolistid/todo/:todoid', function () {
             var todoId;
 
             before(function (done) {
                 var body = {
-                    text: 'Buy Starwberries',
-                    token: token
+                    text: 'Buy Starwberries'
                 };
 
                 request(url)
                     .post('/api/user/' + userId + '/todolist/' + listId + '/todo')
+                    .set('X-Auth-Token', token)
                     .send(body)
                     .end(function (err, res) {
                         if (err) {
@@ -430,44 +503,50 @@ describe('REST API Testing', function () {
             });
 
             it('should return a update a todo entry', function (done) {
-                var dueDate = new Date(),
-                    updateBody = {
-                        text: 'Buy Bananas',
-                        dueDate: dueDate,
-                        completed: true,
-                        token: token
-                    };
-
                 request(url)
-                    .put('/api/user/' + userId + '/todolist/' + listId + '/todo/' + todoId)
-                    .send(updateBody)
-                    .expect('Content-Type', /json/)
+                    .get('/api/user/' + userId + '/todolist/' + listId + '/todo/' + todoId)
+                    .set('X-Auth-Token', token)
                     .expect(200) //Status code
-                    .end(function (err, res) {
+                    .end(function (err, todo) {
                         if (err) {
                             throw err;
                         }
-                        should.not.exist(err);
-                        res.body.text.should.equal('Buy Bananas');
-                        res.body.completed.should.be.ok;
-                        res.body.dueDate.should.equal(dueDate);
-                        done();
-                    });
 
+                        todo.body.text = 'Buy Bananas';
+                        todo.body.dueDate = new Date();
+                        todo.body.completed = true;
+
+                        request(url)
+                            .put('/api/user/' + userId + '/todolist/' + listId + '/todo/' + todoId)
+                            .set('X-Auth-Token', token)
+                            .send(todo.body)
+                            .expect('Content-Type', /json/)
+                            .expect(200) //Status code
+                            .end(function (err, res) {
+                                if (err) {
+                                    throw err;
+                                }
+                                should.not.exist(err);
+                                res.body.text.should.equal('Buy Bananas');
+                                res.body.completed.should.be.ok;
+                                done();
+                            });
+
+                    });
             });
         });
 
-        describe('DELETE on /api/user/:id/todolist/:id/todo/:id', function () {
+        describe('DELETE on /api/user/:userid/todolist/:todolistid/todo/:todoid', function () {
             var todoId;
 
             before(function (done) {
                 var body = {
-                    text: 'Buy Peaches',
-                    token: token
+                    text: 'Buy Peaches'
                 };
 
                 request(url)
                     .post('/api/user/' + userId + '/todolist/' + listId + '/todo')
+                    .set('X-Auth-Token', token)
                     .send(body)
                     .end(function (err, res) {
                         if (err) {
@@ -480,11 +559,11 @@ describe('REST API Testing', function () {
 
             it('should return a update a todo entry', function (done) {
                 var deleteBody = {
-                    token: token
                 };
 
                 request(url)
-                    .delete('/api/user/' + userId + '/todolist/' + listId + '/todo/' + todoId)
+                    .del('/api/user/' + userId + '/todolist/' + listId + '/todo/' + todoId)
+                    .set('X-Auth-Token', token)
                     .send(deleteBody)
                     .expect('Content-Type', /json/)
                     .expect(200) //Status code

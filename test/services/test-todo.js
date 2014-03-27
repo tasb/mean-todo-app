@@ -169,6 +169,20 @@ describe('TODO Services', function () {
                 });
             });
         });
+
+        it('should return TODO List details when finding by Id', function (done) {
+            service.newTodoList(user._id, 'Shopping Cart', function (err, todoList) {
+                should.not.exist(err);
+                should.exist(todoList);
+
+                service.getTodoListById(todoList._id, function (err, details) {
+                    should.not.exist(err);
+                    should.exist(details);
+                    details.name.should.equal('Shopping Cart');
+                    done();
+                });
+            });
+        });
     });
 
     describe('Create and Delete TODO', function () {
@@ -211,29 +225,34 @@ describe('TODO Services', function () {
             });
         });
 
+        it('should return TODO details when getting by id', function (done) {
+            service.newTodo(list._id, 'Buy Peaches', priority._id, new Date(), function (err, todo) {
+                should.not.exist(err);
+                should.exist(todo);
+                service.getTodoById(todo._id, function (err, details) {
+                    should.not.exist(err);
+                    should.exist(todo);
+                    details.text.should.equal('Buy Peaches');
+                    details.priority.should.eql(priority._id);
+                    done();
+                });
+            });
+        });
+
         it('should return three records when listing all TODO list from one list', function (done) {
             service.getTodosFromList(list._id, function (err, todos) {
                 should.not.exist(err);
                 should.exist(todos);
-                todos.should.be.instanceof(Array).and.have.lengthOf(3);
+                todos.should.be.instanceof(Array).and.have.lengthOf(4);
                 done();
             });
         });
-
-        // it('should return three records when listing all TODO list from one user', function (done) {
-        //     service.getTodosFromUser(user._id, function (err, todos) {
-        //         should.not.exist(err);
-        //         should.exist(todos);
-        //         todos.should.be.instanceof(Array).and.have.lengthOf(3);
-        //         done();
-        //     });
-        // });
 
         it('should return success editing a TODO', function (done) {
             service.getTodosFromList(list._id, function (err, todos) {
                 should.not.exist(err);
                 should.exist(todos);
-                todos.should.be.instanceof(Array).and.have.lengthOf(3);
+                todos.should.be.instanceof(Array).and.have.lengthOf(4);
 
                 todos[0].completed = true;
 
@@ -250,7 +269,7 @@ describe('TODO Services', function () {
             service.getTodosFromListNotCompleted(list._id, function (err, todos) {
                 should.not.exist(err);
                 should.exist(todos);
-                todos.should.be.instanceof(Array).and.have.lengthOf(2);
+                todos.should.be.instanceof(Array).and.have.lengthOf(3);
                 done();
             });
         });

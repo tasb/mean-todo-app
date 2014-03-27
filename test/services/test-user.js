@@ -122,12 +122,27 @@ describe('User Services', function () {
         });
     });
 
+    describe('Get user details', function () {
+        it('should return user detail when getting detils by userId', function (done) {
+            service.register('testDetails@email.com', 'Test User', 'PASSWORD', function (err, user) {
+                should.not.exist(err);
+                should.exist(user);
+
+                service.getUser(user._id, function (err, details) {
+                    should.not.exist(err);
+                    details.name.should.equal('Test User');
+                    details.email.should.equal('testDetails@email.com');
+                    done();
+                });
+            });
+        });
+    });
+
     describe('Validate token', function () {
         it('should return not success when validating an invalid token', function (done) {
             service.validateToken('XXXXXXXXXXXX', function (err, success) {
                 should.not.exist(err);
-                should.exist(success);
-                success.should.be.not.ok;
+                should.not.exist(success);
                 done();
             });
         });

@@ -1,14 +1,13 @@
 'use strict';
 
-var express = require('express'),
-    http = require('http');
+var http = require('http');
 
-var RestAPI = function (opts, handlers) {
+var RestAPI = function (opts, server, handlers) {
     var self = this;
     self.cfg = opts || {};
     self.logger = opts.log;
     self.handlers = handlers;
-    self.server = null;
+    self.server = server;
 
     if (!self.handlers.user) {
         throw new Error('REST API cannot start without user services');
@@ -30,6 +29,24 @@ var RestAPI = function (opts, handlers) {
 
         res.type('json');
         res.send(code).send(body);
+    };
+
+    self.checkPermission = function (userId, token, cb) {
+        self.handlers.user.getUser(userId, function (err, user) {
+            if (err) {
+                cb(err, null);
+                return;
+            }
+
+            self.handlers.user.validateToken(token, function (err, email) {
+                if (err) {
+                    cb(err, null);
+                    return;
+                }
+
+                cb(null, (email === user.email));
+            });
+        });
     };
 
     self.registerUser = function (req, res) {
@@ -89,12 +106,14 @@ var RestAPI = function (opts, handlers) {
             return;
         }
 
-        if (!req.body.token) {
+        var token = req.get(self.cfg.AuthToken);
+
+        if (!token) {
             self.sendError(res, 401);
             return;
         }
 
-        self.handlers.user.validateToken(req.body.token, function (err, email) {
+        self.handlers.user.validateToken(token, function (err, email) {
             if (err) {
                 self.sendError(res, 500, err);
                 return;
@@ -119,7 +138,7 @@ var RestAPI = function (opts, handlers) {
     };
 
     self.createTodoList = function (req, res) {
-        if (!req.body.token) {
+        if (!req.get(self.cfg.AuthToken)) {
             self.sendError(res, 401);
             return;
         }
@@ -129,91 +148,266 @@ var RestAPI = function (opts, handlers) {
             return;
         }
 
-        self.handlers.user.getUser(req.params.userid, function (err, user) {
+        self.checkPermission(req.params.userid, req.get(self.cfg.AuthToken), function (err, permitted) {
             if (err) {
                 self.sendError(res, 500, err);
                 return;
             }
 
-            self.handlers.user.validateToken(req.body.token, function (err, email) {
+            if (!permitted) {
+                self.sendError(res, 401);
+                return;
+            }
+
+            self.handlers.todo.newTodoList(req.params.userid, req.body.name, function (err, list) {
                 if (err) {
                     self.sendError(res, 500, err);
                     return;
                 }
 
-                if (email !== user.email) {
-                    self.sendError(res, 401);
-                    return;
-                }
-
-                self.handlers.todo.newTodoList(req.params.userid, req.body.name, function (err, list) {
-                    if (err) {
-                        self.sendError(res, 500, err);
-                        return;
-                    }
-
-                    res.set('Content-Type', 'aplication/json');
-                    res.type('json');
-                    res.send(200, list);
-                });
+                res.set('Content-Type', 'aplication/json');
+                res.type('json');
+                res.send(200, list);
             });
+
         });
     };
 
     self.getTodoLists = function (req, res) {
-        res.status(501).send(http.STATUS_CODES[501]);
+        if (!req.get(self.cfg.AuthToken)) {
+            self.sendError(res, 401);
+            return;
+        }
+
+        self.checkPermission(req.params.userid, req.get(self.cfg.AuthToken), function (err, permitted) {
+            if (err) {
+                self.sendError(res, 500, err);
+                return;
+            }
+
+            if (!permitted) {
+                self.sendError(res, 401);
+                return;
+            }
+
+            self.handlers.todo.getTodoListByUser(req.params.userid, function (err, results) {
+                if (err) {
+                    self.sendError(res, 500, err);
+                    return;
+                }
+
+                res.set('Content-Type', 'aplication/json');
+                res.type('json');
+                res.send(200, results);
+            });
+
+        });
     };
 
     self.getTodoListDetails = function (req, res) {
-        res.status(501).send(http.STATUS_CODES[501]);
+        if (!req.get(self.cfg.AuthToken)) {
+            self.sendError(res, 401);
+            return;
+        }
+
+        self.checkPermission(req.params.userid, req.get(self.cfg.AuthToken), function (err, permitted) {
+            if (err) {
+                self.sendError(res, 500, err);
+                return;
+            }
+
+            if (!permitted) {
+                self.sendError(res, 401);
+                return;
+            }
+
+            self.handlers.todo.getTodoListById(req.params.todolistid, function (err, list) {
+                if (err) {
+                    self.sendError(res, 500, err);
+                    return;
+                }
+
+                res.set('Content-Type', 'aplication/json');
+                res.type('json');
+                res.send(200, list);
+            });
+
+        });
     };
 
     self.createTodo = function (req, res) {
-        res.status(501).send(http.STATUS_CODES[501]);
+        if (!req.get(self.cfg.AuthToken)) {
+            self.sendError(res, 401);
+            return;
+        }
+
+        if (!req.body.text) {
+            self.sendError(res, 400, 'Missing text parameter');
+            return;
+        }
+
+        self.checkPermission(req.params.userid, req.get(self.cfg.AuthToken), function (err, permitted) {
+            if (err) {
+                self.sendError(res, 500, err);
+                return;
+            }
+
+            if (!permitted) {
+                self.sendError(res, 401);
+                return;
+            }
+
+            self.handlers.todo.newTodo(req.params.todolistid, req.body.text, req.body.priorityId, req.body.dueDate, function (err, todo) {
+                if (err) {
+                    self.sendError(res, 500, err);
+                    return;
+                }
+
+                res.set('Content-Type', 'aplication/json');
+                res.type('json');
+                res.send(200, todo);
+            });
+
+        });
     };
 
     self.getTodosFromList = function (req, res) {
-        res.status(501).send(http.STATUS_CODES[501]);
+        if (!req.get(self.cfg.AuthToken)) {
+            self.sendError(res, 401);
+            return;
+        }
+
+        self.checkPermission(req.params.userid, req.get(self.cfg.AuthToken), function (err, permitted) {
+            if (err) {
+                self.sendError(res, 500, err);
+                return;
+            }
+
+            if (!permitted) {
+                self.sendError(res, 401);
+                return;
+            }
+
+            self.handlers.todo.getTodosFromList(req.params.todolistid, function (err, todos) {
+                if (err) {
+                    self.sendError(res, 500, err);
+                    return;
+                }
+
+                res.set('Content-Type', 'aplication/json');
+                res.type('json');
+                res.send(200, todos);
+            });
+
+        });
     };
 
     self.getTodoDetail = function (req, res) {
-        res.status(501).send(http.STATUS_CODES[501]);
+        if (!req.get(self.cfg.AuthToken)) {
+            self.sendError(res, 401);
+            return;
+        }
+
+        self.checkPermission(req.params.userid, req.get(self.cfg.AuthToken), function (err, permitted) {
+            if (err) {
+                self.sendError(res, 500, err);
+                return;
+            }
+
+            if (!permitted) {
+                self.sendError(res, 401);
+                return;
+            }
+
+            self.handlers.todo.getTodoById(req.params.todoid, function (err, todo) {
+                if (err) {
+                    self.sendError(res, 500, err);
+                    return;
+                }
+
+                res.set('Content-Type', 'aplication/json');
+                res.type('json');
+                res.send(200, todo);
+            });
+
+        });
     };
 
     self.updateTodo = function (req, res) {
-        res.status(501).send(http.STATUS_CODES[501]);
+        if (!req.get(self.cfg.AuthToken)) {
+            self.sendError(res, 401);
+            return;
+        }
+
+        self.checkPermission(req.params.userid, req.get(self.cfg.AuthToken), function (err, permitted) {
+            if (err) {
+                self.sendError(res, 500, err);
+                return;
+            }
+
+            if (!permitted) {
+                self.sendError(res, 401);
+                return;
+            }
+
+            self.handlers.todo.updateTodo(req.body, function (err, todo) {
+                if (err) {
+                    self.sendError(res, 500, err);
+                    return;
+                }
+
+                res.set('Content-Type', 'aplication/json');
+                res.type('json');
+                res.send(200, todo);
+            });
+
+        });
     };
 
     self.deleteTodo = function (req, res) {
-        res.status(501).send(http.STATUS_CODES[501]);
+        if (!req.get(self.cfg.AuthToken)) {
+            self.sendError(res, 401);
+            return;
+        }
+
+        self.checkPermission(req.params.userid, req.get(self.cfg.AuthToken), function (err, permitted) {
+            if (err) {
+                self.sendError(res, 500, err);
+                return;
+            }
+
+            if (!permitted) {
+                self.sendError(res, 401);
+                return;
+            }
+
+            self.handlers.todo.deleteTodo(req.params.todoid, function (err, success) {
+                if (err) {
+                    self.sendError(res, 500, err);
+                    return;
+                }
+
+                res.set('Content-Type', 'aplication/json');
+                res.type('json');
+                res.send(200, { success: success });
+            });
+
+        });
     };
 };
 
 RestAPI.prototype.init = function () {
-    var self = this;
-
-    self.server = express();
-
-    self.server.configure(function () {
-        self.server.use(express.bodyParser());
-        self.server.use(express.methodOverride());
-        self.server.use(self.server.router);
-        self.server.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
-    });
-
-    self.server.post('/api/user', self.registerUser);
-    self.server.post('/api/user/login', self.loginUser);
-    self.server.post('/api/user/logout', self.logoutUser);
-    self.server.post('/api/user/:userid/todolist', self.createTodoList);
-    self.server.get('/api/user/:userid/todolist', self.getTodoLists);
-    self.server.get('/api/user/:userid/todolist/:todolistid', self.getTodoListDetails);
-    self.server.post('/api/user/:userid/todolist/:todolistid/todo', self.createTodo);
-    self.server.get('/api/user/:userid/todolist/:todolistid/todo', self.getTodosFromList);
-    self.server.get('/api/user/:userid/todolist/:todolistid/todo/:todoid', self.getTodoDetail);
-    self.server.put('/api/user/:userid/todolist/:todolistid/todo/:todoid', self.updateTodo);
-    self.server.delete('/api/user/:userid/todolist/:todolistid/todo/:todoid', self.deleteTodo);
-
-    self.server.listen(self.cfg.port);
+    this.server.post('/api/user', this.registerUser);
+    this.server.post('/api/user/login', this.loginUser);
+    this.server.post('/api/user/logout', this.logoutUser);
+    this.server.post('/api/user/:userid/todolist', this.createTodoList);
+    this.server.get('/api/user/:userid/todolist', this.getTodoLists);
+    this.server.get('/api/user/:userid/todolist/:todolistid', this.getTodoListDetails);
+    this.server.post('/api/user/:userid/todolist/:todolistid/todo', this.createTodo);
+    this.server.get('/api/user/:userid/todolist/:todolistid/todo', this.getTodosFromList);
+    this.server.get('/api/user/:userid/todolist/:todolistid/todo/:todoid', this.getTodoDetail);
+    this.server.put('/api/user/:userid/todolist/:todolistid/todo/:todoid', this.updateTodo);
+    this.server.delete('/api/user/:userid/todolist/:todolistid/todo/:todoid', this.deleteTodo);
 };
 
 exports = module.exports = RestAPI;
