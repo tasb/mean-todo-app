@@ -29,6 +29,7 @@ var Server = function (opts) {
                 showStack: true
             }));
         });
+        self.server.listen(self.cfg.port);
 
         self.userService = new UserService({
             log: self.cfg.log,
@@ -61,7 +62,6 @@ var Server = function (opts) {
 
 Server.prototype.init = function () {
     this.logger.info('Server started on port %s', this.cfg.port);
-    this.server.listen(this.cfg.port);
     this.restApi.init();
 };
 

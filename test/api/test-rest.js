@@ -4,6 +4,7 @@ var should = require('should'),
     request = require('supertest'),
     mongoose = require('mongoose'),
     express = require('express'),
+    mocks = require('../mocks.js'),
     TodoSchema = require('../../app/models/todo.js'),
     TodoListSchema = require('../../app/models/todo-list.js'),
     UserSchema = require('../../app/models/user.js'),
@@ -30,10 +31,6 @@ describe('REST API Testing', function () {
     }
 
     before(function () {
-        console.info = function () { };
-        console.trace = function () { };
-        console.error = function () { };
-
         server = express();
 
         server.configure(function () {
@@ -46,7 +43,7 @@ describe('REST API Testing', function () {
 
         url = 'http://127.0.0.1:9000';
         userSrv = new UserService({
-            log: console,
+            log: mocks.mockLogger,
             storage: {
                 host: '127.0.0.1',
                 port: '27017',
