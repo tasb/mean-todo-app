@@ -1,6 +1,12 @@
-module.exports = function(grunt) {
-    // Project configuration.
+module.exports = function (grunt) {
+
+    'use strict';
+    require('matchdep').filterDev('grunt-*').forEach(grunt.loadNpmTasks);
+
     grunt.initConfig({
-        pkg: grunt.file.readJSON('package.json'),
+        pkg: grunt.file.readJSON('package.json')
     });
+
+    grunt.registerTask('default', []);
+
 };

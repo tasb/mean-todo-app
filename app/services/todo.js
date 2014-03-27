@@ -2,6 +2,7 @@
 
 var mongoose = require('mongoose'),
     util = require('util'),
+    _ = require('underscore'),
     PrioritySchema = require('../models/priority.js'),
     TodoListSchema = require('../models/todo-list.js'),
     TodoSchema = require('../models/todo.js');
@@ -42,6 +43,38 @@ var TodoService = function (opts) {
     self.init();
 };
 
+/**
+ * This callback type is called `successCallback` and is displayed as a global symbol.
+ *
+ * @callback successCallback
+ * @param {string} err - error message when an error occurs
+ * @param {boolean} success - indicates if the operation runs with success
+ */
+
+ /**
+ * This callback type is called `objectCallback` and is displayed as a global symbol.
+ *
+ * @callback objectCallback
+ * @param {string} err - error message when an error occurs
+ * @param {string} obj - model object that was created or modified
+ */
+
+ /**
+ * This callback type is called `listCallback` and is displayed as a global symbol.
+ *
+ * @callback listCallback
+ * @param {string} err - error message when an error occurs
+ * @param {string} list - list of model objects
+ */
+
+/**
+ * Creates new priority
+ * 
+ * @param {string} name Priority name
+ * @param {Number} order Priority order 
+ * @param {string} color Color to identify priority (rgb format: #XXXXXX)
+ * @param {objectCallback} cb Return callback
+ */
 TodoService.prototype.newPriority = function (name, order, color, cb) {
     if ('function' === typeof name) {
         cb = name;
@@ -83,16 +116,35 @@ TodoService.prototype.newPriority = function (name, order, color, cb) {
     priority.save(cb);
 };
 
+/**
+ * Gets all priorities
+ * 
+ * @param {listCallback} cb Return callback
+ */
 TodoService.prototype.getPriorities = function (cb) {
     this.PriorityModel.findAll(cb);
 };
 
+/**
+ * Delets a priority record
+ *
+ * @param {ObjectId} id Priority Id
+ * @param {succesCallback} cb Return callback
+ */
 TodoService.prototype.deletePriority = function (id, cb) {
     this.PriorityModel.remove({
         _id: id
     }, cb);
 };
 
+
+/**
+ * Creates a new TODO List
+ * 
+ * @param {ObjectId} userId User id to whom TODO list will be added
+ * @param {string} name TODO List name
+ * @param {objectCallback} cb Return callback
+ */
 TodoService.prototype.newTodoList = function (userId, name, cb) {
     if ('function' === typeof userId) {
         cb = userId;
@@ -128,18 +180,62 @@ TodoService.prototype.newTodoList = function (userId, name, cb) {
     todolist.save(cb);
 };
 
+/**
+ * Gets a TODO List details
+ * 
+ * @param {ObjectId} listId TODO list Id
+ * @param {objectCallback} cb Return callback
+ */
+TodoService.prototype.getTodoListById = function (listId, cb) {
+    this.logger.info('[Todo Service] getTodoListById. Id: %s', listId);
+
+    if (!listId) {
+        cb('Invalid parameters: ListId is mandatory', null);
+        return;
+    }
+
+    if ('function' !== typeof cb) {
+        cb('Invalid parameters: Callback is mandatory', null);
+        return;
+    }
+
+    this.TodoListModel.findById(listId, cb);
+};
+
+/**
+ * Gets all TODO Lists from an user
+ * 
+ * @param {ObjectId} userid User Id
+ * @param {listCallback} cb Return callback
+ */
 TodoService.prototype.getTodoListByUser = function (userid, cb) {
     this.TodoListModel.findByUser({
         _id: userid
     }, cb);
 };
 
+/**
+ * Delets a TODO list record
+ *
+ * @param {ObjectId} id TODO List Id
+ * @param {succesCallback} cb Return callback
+ */
 TodoService.prototype.deleteTodoList = function (id, cb) {
     this.TodoListModel.remove({
         _id: id
     }, cb);
 };
 
+
+/**
+ * Creates a new TODO entry
+ * 
+ * @param {ObjectId} listId List id to which TODO will be added
+ * @param {string} text TODO text
+ * @param {ObjectId} priorityId Id of TODO's priority
+ * @param {Date} dueDate TODO's duw date
+ * @param {objectCallback} cb Return callback
+ */
 TodoService.prototype.newTodo = function (listId, text, priorityId, dueDate, cb) {
     if ('function' === typeof listId) {
         cb = listId;
@@ -187,6 +283,12 @@ TodoService.prototype.newTodo = function (listId, text, priorityId, dueDate, cb)
     todo.save(cb);
 };
 
+/**
+ * Gets all TODO entries from a TODO list
+ * 
+ * @param {ObjectId} listId List Id
+ * @param {listCallback} cb Return callback
+ */
 TodoService.prototype.getTodosFromList = function (listId, cb) {
     if ('function' === typeof listId) {
         cb = listId;
@@ -203,6 +305,12 @@ TodoService.prototype.getTodosFromList = function (listId, cb) {
     }, cb);
 };
 
+/**
+ * Gets all TODO entries from a all TODO list of an user
+ * 
+ * @param {ObjectId} userId User Id
+ * @param {listCallback} cb Return callback
+ */
 TodoService.prototype.getTodosFromUser = function (userId, cb) {
     if ('function' === typeof userId) {
         cb = userId;
@@ -219,6 +327,32 @@ TodoService.prototype.getTodosFromUser = function (userId, cb) {
     }, cb);
 };
 
+/**
+ * Gets a TODO entry details
+ * 
+ * @param {ObjectId} todoId TODO Id
+ * @param {objectCallback} cb Return callback
+ */
+TodoService.prototype.getTodoById = function (todoId, cb) {
+    if ('function' === typeof todoId) {
+        cb = todoId;
+        todoId = null;
+    }
+
+    if (!todoId) {
+        cb('Invalid parameters: TodoId is mandatory', null);
+        return;
+    }
+
+    this.TodoModel.findById(todoId, cb);
+};
+
+/**
+ * Updates a TODO entry details
+ * 
+ * @param {Object} todo TODO's new details
+ * @param {objectCallback} cb Return callback
+ */
 TodoService.prototype.updateTodo = function (todo, cb) {
     if ('function' === typeof todo) {
         cb = todo;
@@ -230,9 +364,23 @@ TodoService.prototype.updateTodo = function (todo, cb) {
         return;
     }
 
-    todo.save(cb);
+    this.getTodoById(todo._id, function (err, todoDB) {
+        if (err) {
+            cb(err, null);
+        }
+
+        var toUpdate = _.extend(todoDB, todo);
+
+        toUpdate.save(cb);
+    });
 };
 
+/**
+ * Gets all not completed TODO entries from a TODO list
+ * 
+ * @param {ObjectId} listId TODO list Id
+ * @param {listCallback} cb Return callback
+ */
 TodoService.prototype.getTodosFromListNotCompleted = function (listId, cb) {
     if ('function' === typeof listId) {
         cb = listId;
@@ -251,6 +399,12 @@ TodoService.prototype.getTodosFromListNotCompleted = function (listId, cb) {
     }, cb);
 };
 
+/**
+ * Gets all completed TODO entries from a TODO list
+ * 
+ * @param {ObjectId} listId TODO list Id
+ * @param {listCallback} cb Return callback
+ */
 TodoService.prototype.getTodosFromListCompleted = function (listId, cb) {
     if ('function' === typeof listId) {
         cb = listId;
@@ -269,6 +423,12 @@ TodoService.prototype.getTodosFromListCompleted = function (listId, cb) {
     }, cb);
 };
 
+/**
+ * Delets a TODO entry record
+ *
+ * @param {ObjectId} id TODO Id
+ * @param {succesCallback} cb Return callback
+ */
 TodoService.prototype.deleteTodo = function (id, cb) {
     this.TodoModel.remove({
         _id: id
