@@ -36,12 +36,12 @@ var UserSchema = new Schema({
         type: Boolean,
         default: false
     },
-    created: {
+    created_at: {
         type: Date,
         default: new Date().getTime(),
         required: true
     },
-    updated: {
+    updated_at: {
         type: Date,
         default: new Date().getTime(),
         required: true
@@ -61,5 +61,13 @@ UserSchema.statics.findAll = function (cb) {
 };
 
 UserSchema.path('email').index({ unique: true });
+
+UserSchema.pre('save', function (next) {
+    this.updated_at = new Date();
+    if (!this.created_at) {
+        this.created_at = new Date();
+    }
+    next();
+});
 
 exports = module.exports = UserSchema;
