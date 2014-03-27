@@ -64,7 +64,7 @@ describe('REST API Testing', function () {
             misc: {
                 tokenSize: 32,
                 tokenExpire: 3600,
-                missingPasswordRetries: 0,
+                missingPasswordRetries: 0
             }
         });
         todoSrv = new TodoService({
@@ -76,10 +76,10 @@ describe('REST API Testing', function () {
             }
         });
 
-        rest = new RestAPI({
+        rest = new RestAPI(server, {
             log: console,
             AuthToken: 'X-Auth-Token'
-        }, server, {
+        }, {
             user: userSrv,
             todo: todoSrv
         });

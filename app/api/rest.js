@@ -2,7 +2,7 @@
 
 var http = require('http');
 
-var RestAPI = function (opts, server, handlers) {
+var RestAPI = function (server, opts, handlers) {
     var self = this;
     self.cfg = opts || {};
     self.logger = opts.log;
