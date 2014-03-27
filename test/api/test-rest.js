@@ -31,6 +31,8 @@ describe('REST API Testing', function () {
 
     before(function () {
         console.info = function () { };
+        console.trace = function () { };
+        console.error = function () { };
 
         server = express();
 

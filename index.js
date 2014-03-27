@@ -2,31 +2,20 @@
 
 var config = require("./config/config.json"),
     bunyan = require('bunyan'),
+    nopt = require("nopt"),
     log = bunyan.createLogger({name: "betvictor-app"}),
+    knownOpts = {
+        "port" : [Number]
+    },
+    parsed = nopt(knownOpts, {}, process.argv, 2),
     TODOServer = require('./app/server.js');
 
 var options = {
     log: log,
-    port: 9000,
-    storage: {
-        host: '127.0.0.1',
-        port: '27017',
-        database: 'todo-test'
-    },
-    cache: {
-        host: '127.0.0.1',
-        port: '6379',
-        database: '2'
-    },
-    passwordConfig: {
-        algorithm: 'pbkdf2',
-        iterations: 10000,
-        salt: 16,
-        size: 256,
-        tokenSize: 32,
-        tokenExpire: 3600,
-        missingPasswordRetries: 0
-    }
+    port: parsed.port || config.DefaultPort,
+    storage: config.Storage,
+    cache: config.Cache,
+    passwordConfig: config.PasswordConfig
 };
 
 log.level(config.LogLevel || "warn");
