@@ -27,12 +27,12 @@ var TodoSchema = new Schema({
     dueDate: {
         type: Date
     },
-    created: {
+    created_at: {
         type: Date,
         default: new Date().getTime(),
         required: true
     },
-    updated: {
+    updated_at: {
         type: Date,
         default: new Date().getTime(),
         required: true
@@ -63,5 +63,13 @@ TodoSchema.statics.findByTextOnTodoList = function (text, todoList, cb) {
 TodoSchema.statics.findAll = function (cb) {
     this.find({ }).populate('priority').sort('order').exec(cb);
 };
+
+TodoSchema.pre('save', function (next) {
+    this.updated_at = new Date();
+    if (!this.created_at) {
+        this.created_at = new Date();
+    }
+    next();
+});
 
 exports = module.exports = TodoSchema;

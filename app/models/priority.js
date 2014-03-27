@@ -20,12 +20,12 @@ var PrioritySchema = new Schema({
         trim: true,
         match: /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/
     },
-    created: {
+    created_at: {
         type: Date,
         default: new Date().getTime(),
         required: true
     },
-    updated: {
+    updated_at: {
         type: Date,
         default: new Date().getTime(),
         required: true
@@ -46,5 +46,13 @@ PrioritySchema.statics.cleanUp = function () {
 
 PrioritySchema.path('name').index({ unique: true });
 PrioritySchema.path('order').index({ unique: true });
+
+PrioritySchema.pre('save', function (next) {
+    this.updated_at = new Date();
+    if (!this.created_at) {
+        this.created_at = new Date();
+    }
+    next();
+});
 
 exports = module.exports = PrioritySchema;

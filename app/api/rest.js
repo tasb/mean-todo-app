@@ -2,7 +2,7 @@
 
 var http = require('http');
 
-var RestAPI = function (opts, server, handlers) {
+var RestAPI = function (server, opts, handlers) {
     var self = this;
     self.cfg = opts || {};
     self.logger = opts.log;
@@ -18,6 +18,7 @@ var RestAPI = function (opts, server, handlers) {
     }
 
     self.sendError = function (res, code, message) {
+        self.logger.error('[REST API] Sending ERROR response. Code: %s, Message: %s', code, message);
         if (!message) {
             message = http.STATUS_CODES[code];
         }
@@ -32,6 +33,7 @@ var RestAPI = function (opts, server, handlers) {
     };
 
     self.sendResponse = function (res, body) {
+        self.logger.trace('[REST API] Sending OK response. Value: %j', body);
         res.set('Content-Type', 'aplication/json');
         res.type('json');
         res.send(200, body);
@@ -56,6 +58,7 @@ var RestAPI = function (opts, server, handlers) {
     };
 
     self.registerUser = function (req, res) {
+        self.logger.trace('[REST API] registerUser. Params: %j', req.body);
         if (!req.body.email) {
             self.sendError(res, 400, 'Missing email parameter');
             return;
@@ -76,12 +79,18 @@ var RestAPI = function (opts, server, handlers) {
                 self.sendError(res, 500, err);
                 return;
             }
-
-            self.sendResponse(res, user);
+            // to delete password and salt properties
+            var toReturn = {
+                _id: user.id,
+                name: user.name,
+                email: user.email
+            };
+            self.sendResponse(res, toReturn);
         });
     };
 
     self.loginUser = function (req, res) {
+        self.logger.trace('[REST API] loginUser. Params: %j', req.body);
         if (!req.body.email) {
             self.sendError(res, 400, 'Missing email parameter');
             return;
@@ -103,6 +112,7 @@ var RestAPI = function (opts, server, handlers) {
     };
 
     self.logoutUser = function (req, res) {
+        self.logger.trace('[REST API] logoutUser. Params: %j', req.body);
         if (!req.body.email) {
             self.sendError(res, 400, 'Missing email parameter');
             return;
@@ -138,6 +148,7 @@ var RestAPI = function (opts, server, handlers) {
     };
 
     self.createTodoList = function (req, res) {
+        self.logger.trace('[REST API] createTodoList. Params: %j', req.body);
         if (!req.get(self.cfg.AuthToken)) {
             self.sendError(res, 401);
             return;
@@ -172,6 +183,7 @@ var RestAPI = function (opts, server, handlers) {
     };
 
     self.getTodoLists = function (req, res) {
+        self.logger.trace('[REST API] getTodoLists. Params: %j', req.body);
         if (!req.get(self.cfg.AuthToken)) {
             self.sendError(res, 401);
             return;
@@ -201,6 +213,7 @@ var RestAPI = function (opts, server, handlers) {
     };
 
     self.getTodoListDetails = function (req, res) {
+        self.logger.trace('[REST API] getTodoListDetails. Params: %j', req.body);
         if (!req.get(self.cfg.AuthToken)) {
             self.sendError(res, 401);
             return;
@@ -230,6 +243,7 @@ var RestAPI = function (opts, server, handlers) {
     };
 
     self.createTodo = function (req, res) {
+        self.logger.trace('[REST API] createTodo. Params: %j', req.body);
         if (!req.get(self.cfg.AuthToken)) {
             self.sendError(res, 401);
             return;
@@ -264,6 +278,7 @@ var RestAPI = function (opts, server, handlers) {
     };
 
     self.getTodosFromList = function (req, res) {
+        self.logger.trace('[REST API] getTodosFromList. Params: %j', req.body);
         if (!req.get(self.cfg.AuthToken)) {
             self.sendError(res, 401);
             return;
@@ -293,6 +308,7 @@ var RestAPI = function (opts, server, handlers) {
     };
 
     self.getTodoDetail = function (req, res) {
+        self.logger.trace('[REST API] getTodoDetail. Params: %j', req.body);
         if (!req.get(self.cfg.AuthToken)) {
             self.sendError(res, 401);
             return;
@@ -322,6 +338,7 @@ var RestAPI = function (opts, server, handlers) {
     };
 
     self.updateTodo = function (req, res) {
+        self.logger.trace('[REST API] updateTodo. Params: %j', req.body);
         if (!req.get(self.cfg.AuthToken)) {
             self.sendError(res, 401);
             return;
@@ -351,6 +368,7 @@ var RestAPI = function (opts, server, handlers) {
     };
 
     self.deleteTodo = function (req, res) {
+        self.logger.trace('[REST API] deleteTodo. Params: %j', req.body);
         if (!req.get(self.cfg.AuthToken)) {
             self.sendError(res, 401);
             return;
