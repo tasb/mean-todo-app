@@ -3,7 +3,7 @@
 var config = require("./config/config.json"),
     bunyan = require('bunyan'),
     nopt = require("nopt"),
-    log = bunyan.createLogger({name: "betvictor-app"}),
+    log = bunyan.createLogger({name: "mean-todo-app"}),
     knownOpts = {
         "port" : [Number]
     },

@@ -18,7 +18,7 @@
   "main": "index.js",
   "scripts": {
     "test": "NODE_ENV=test ./node_modules/.bin/mocha --reporter spec --timeout 10000  --recursive test*",
-    "start": "NODE_ENV=dev node index.js --port 7000 | bunyan"
+    "start": "NODE_ENV=dev node index.js --port 9000 | bunyan"
   },
   "dependencies": {
     "mongoose": "3.8.x",

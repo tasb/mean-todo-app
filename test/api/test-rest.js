@@ -67,7 +67,7 @@ describe('REST API Testing', function () {
             }
         });
         todoSrv = new TodoService({
-            log: console,
+            log: mocks.mockLogger,
             storage: {
                 host: '127.0.0.1',
                 port: '27017',
@@ -76,7 +76,7 @@ describe('REST API Testing', function () {
         });
 
         rest = new RestAPI(server, {
-            log: console,
+            log: mocks.mockLogger,
             AuthToken: 'X-Auth-Token'
         }, {
             user: userSrv,

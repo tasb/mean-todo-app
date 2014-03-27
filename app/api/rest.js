@@ -79,8 +79,13 @@ var RestAPI = function (server, opts, handlers) {
                 self.sendError(res, 500, err);
                 return;
             }
-
-            self.sendResponse(res, user);
+            // to delete password and salt properties
+            var toReturn = {
+                _id: user.id,
+                name: user.name,
+                email: user.email
+            };
+            self.sendResponse(res, toReturn);
         });
     };
 

@@ -23,6 +23,7 @@ var Server = function (opts) {
             self.server.use(express.urlencoded());
             self.server.use(express.methodOverride());
             self.server.use(self.server.router);
+            self.server.use(express.logger());
             self.server.use(express.static(__dirname + '/../public'));
             self.server.use(express.errorHandler({
                 dumpExceptions: true,
