@@ -104,7 +104,7 @@ var UserService = function (opts) {
     };
 
     self.checkToken = function (token, cb) {
-        self.cache.exists(token, function (err, result) {
+        self.cache.get(token, function (err, result) {
             if (err) {
                 self.logger.error('[User Service] Error getting value for key ' + token + '. Details: ' + err);
                 cb(err, null);
@@ -145,6 +145,14 @@ var UserService = function (opts) {
  * @callback loginCallback
  * @param {string} err - error message when an error occurs
  * @param {string} token - authenticated token to use on other services
+ */
+
+  /**
+ * This callback type is called `userCallback` and is displayed as a global symbol.
+ *
+ * @callback userCallback
+ * @param {string} err - error message when an error occurs
+ * @param {Object} user - user details
  */
 
 
@@ -292,6 +300,27 @@ UserService.prototype.logout = function (email, cb) {
 
     this.invalidateToken(email);
     cb(null, true);
+};
+
+/**
+ * Gets a user.
+ * 
+ * @param {ObjectId} userId User unique Id
+ * @param {userCallback} cb Return callback
+ */
+UserService.prototype.getUser = function (userId, cb) {
+    this.logger.info('[User Service] Get user details. Id: %s', userId);
+    if (!userId) {
+        cb('Invalid parameters: UserId is mandatory', null);
+        return;
+    }
+
+    if ('function' !== typeof cb) {
+        cb('Invalid parameters: Callback is mandatory', null);
+        return;
+    }
+
+    this.UserModel.findById(userId, cb);
 };
 
 exports = module.exports = UserService;

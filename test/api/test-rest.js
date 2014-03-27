@@ -1,8 +1,11 @@
 'use strict';
 
 var should = require('should'),
-    mongoose = require('mongoose'),
     request = require('supertest'),
+    mongoose = require('mongoose'),
+    TodoSchema = require('../../app/models/todo.js'),
+    TodoListSchema = require('../../app/models/todo-list.js'),
+    UserSchema = require('../../app/models/user.js'),
     TodoService = require('../../app/services/todo.js'),
     UserService = require('../../app/services/user.js'),
     RestAPI = require('../../app/api/rest.js');
@@ -14,6 +17,14 @@ describe('REST API Testing', function () {
         url;
 
     function cleanUp() {
+        var db = mongoose.createConnection('mongodb://@127.0.0.1:27017/todo-test'),
+            UserModel = db.model('user', UserSchema),
+            TodoModel = db.model('todo', TodoSchema),
+            TodoListModel = db.model('todolist', TodoListSchema);
+
+        UserModel.remove({}).exec();
+        TodoModel.remove({}).exec();
+        TodoListModel.remove({}).exec();
     }
 
     before(function () {
@@ -38,7 +49,7 @@ describe('REST API Testing', function () {
                 size: 256
             },
             misc: {
-                tokenSize: 256,
+                tokenSize: 32,
                 tokenExpire: 3600,
                 missingPasswordRetries: 0,
             }
@@ -110,7 +121,7 @@ describe('REST API Testing', function () {
         it('should login a new user and gets a token', function (done) {
             var loginBody = {
                 email: 'test2@email.com',
-                pass: 'PASSWORD'
+                password: 'PASSWORD'
             };
             request(url)
                 .post('/api/user/login')
@@ -175,16 +186,15 @@ describe('REST API Testing', function () {
                 .send(body)
                 .expect('Content-Type', /json/)
                 .expect(401) //Status code
-                .end(function (err) {
-                    should.exist(err);
-                    err.should.equal('Unauthorized');
+                .end(function (err, res) {
+                    should.not.exist(err);
                     done();
                 });
         });
 
         it('should return success when logout a logged user', function (done) {
             var body = {
-                email: 'test2@email.com',
+                email: 'test3@email.com',
                 token: token
             };
 
