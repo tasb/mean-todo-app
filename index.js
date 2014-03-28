@@ -13,6 +13,7 @@ var config = require("./config/config.json"),
 var options = {
     log: log,
     port: parsed.port || config.DefaultPort,
+    security: config.Security,
     storage: config.Storage,
     cache: config.Cache,
     passwordConfig: config.PasswordConfig
