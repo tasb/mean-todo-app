@@ -410,9 +410,9 @@ RestAPI.prototype.init = function () {
     this.server.get('/api/user/:userid/todolist/:todolistid/todo/:todoid', this.getTodoDetail);
     this.server.put('/api/user/:userid/todolist/:todolistid/todo/:todoid', this.updateTodo);
     this.server.delete('/api/user/:userid/todolist/:todolistid/todo/:todoid', this.deleteTodo);
-    this.server.get('*', function (req, res) {
-        res.send(404);
-    });
+    // this.server.get('*', function (req, res) {
+    //     res.send(404);
+    // });
 };
 
 exports = module.exports = RestAPI;

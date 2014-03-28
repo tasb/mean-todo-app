@@ -2,8 +2,8 @@
     "LogLevel": "trace",
     "DefaultPort": 9000,
     "Security": {
-        "PrivateKey": "privatekey.pem",
-        "Certificate": "certificate.pem"
+        "PrivateKey": "./app/privatekey.pem",
+        "Certificate": "./app/certificate.pem"
     },
     "Storage": {
         "host": "127.0.0.1",
