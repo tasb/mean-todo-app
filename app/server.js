@@ -15,6 +15,22 @@ var Server = function (opts) {
     self.todoService = null;
     self.restApi = null;
 
+    self.logErrors = function (err, req, res, next) {
+        self.logger.error('logErrors', err.toString());
+        next(err);
+    };
+
+    self.clientErrorHandler = function(err, req, res, next) {
+        self.logger.error('clientErrors ', err.toString());
+        res.send(500, { error: err.toString()});
+        next(err);
+    };
+
+    self.errorHandler = function (err, req, res, next) {
+        self.logger.error('lastErrors ', err.toString());
+        res.send(500, {error: err.toString()});
+    };
+
     self.bootstrap = function () {
         self.server = express();
 
@@ -29,7 +45,11 @@ var Server = function (opts) {
                 dumpExceptions: true,
                 showStack: true
             }));
+            self.server.use(self.logErrors);
+            self.server.use(self.clientErrorHandler);
+            self.server.use(self.errorHandler);
         });
+
         self.server.listen(self.cfg.port);
 
         self.userService = new UserService({

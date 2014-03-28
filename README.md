@@ -29,7 +29,8 @@ Tech
 Prerequesite
 ------------
 
-Must have a [MongoDb] server running on 27017 port of your localhost. If you want to use a Mongo server on another host, please open config file (config/database.json) to set proper settings.
+You [node.js] running on your machine.
+For persistence, this app needs a [MongoDB] server and a [Redis] server.
 
 Installation
 --------------
@@ -37,7 +38,18 @@ Installation
 ```sh
 git clone [git-repo-url] todoapp
 cd todoapp
-npm install
+sudo npm install -g bower
+sudo npm install -g bunyan
+sudo bower install
+sudo npm install
+```
+
+Testing
+--------------
+All components have unit test.
+
+```sh
+npm test
 ```
 
 Running
