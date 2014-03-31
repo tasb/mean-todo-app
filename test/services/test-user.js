@@ -154,7 +154,7 @@ describe('User Services', function () {
                 service.login('test3@email.com', 'PASSWORD', function (err, token) {
                     should.not.exist(err);
                     should.exist(token);
-                    service.validateToken(token, function (err, success) {
+                    service.validateToken(token.token, function (err, success) {
                         should.not.exist(err);
                         should.exist(success);
                         success.should.be.ok;
