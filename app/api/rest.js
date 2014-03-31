@@ -101,13 +101,13 @@ var RestAPI = function (server, opts, handlers) {
             return;
         }
 
-        self.handlers.user.login(req.body.email, req.body.password, function (err, token) {
+        self.handlers.user.login(req.body.email, req.body.password, function (err, data) {
             if (err) {
-                self.sendError(res, 500, err);
+                self.sendError(res, 401, err);
                 return;
             }
 
-            self.sendResponse(res, { token: token });
+            self.sendResponse(res, data);
         });
     };
 
