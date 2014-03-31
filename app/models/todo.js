@@ -61,7 +61,7 @@ TodoSchema.statics.findByTextOnTodoList = function (text, todoList, cb) {
 };
 
 TodoSchema.statics.findAll = function (cb) {
-    this.find({ }).populate('priority').sort('order').exec(cb);
+    this.find({ }).populate('priority').sort('text').exec(cb);
 };
 
 TodoSchema.pre('save', function (next) {

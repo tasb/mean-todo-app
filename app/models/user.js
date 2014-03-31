@@ -57,7 +57,7 @@ UserSchema.statics.findByEmail = function (email, cb) {
 };
 
 UserSchema.statics.findAll = function (cb) {
-    this.find({ }).sort('order').exec(cb);
+    this.find({ }).sort('name').exec(cb);
 };
 
 UserSchema.path('email').index({ unique: true });
