@@ -81,7 +81,8 @@ var Server = function (opts) {
 
         self.restApi = new RestAPI(self.app, {
             log: self.cfg.log,
-            AuthToken: 'X-Auth-Token'
+            AuthTokenHeader: 'X-Auth-Token',
+            UserIdHeader: 'X-User-Id'
         }, {
             user: self.userService,
             todo: self.todoService
