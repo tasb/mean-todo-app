@@ -118,7 +118,7 @@ var RestAPI = function (server, opts, handlers) {
             return;
         }
 
-        var token = req.get(self.cfg.AuthToken);
+        var token = req.get(self.cfg.AuthTokenHeader);
 
         if (!token) {
             self.sendError(res, 401);
@@ -149,7 +149,12 @@ var RestAPI = function (server, opts, handlers) {
 
     self.createTodoList = function (req, res) {
         self.logger.trace('[REST API] createTodoList. Params: %j', req.body);
-        if (!req.get(self.cfg.AuthToken)) {
+        if (!req.get(self.cfg.AuthTokenHeader)) {
+            self.sendError(res, 401);
+            return;
+        }
+
+        if (!req.get(self.cfg.UserIdHeader)) {
             self.sendError(res, 401);
             return;
         }
@@ -159,7 +164,7 @@ var RestAPI = function (server, opts, handlers) {
             return;
         }
 
-        self.checkPermission(req.params.userid, req.get(self.cfg.AuthToken), function (err, permitted) {
+        self.checkPermission(req.get(self.cfg.UserIdHeader), req.get(self.cfg.AuthTokenHeader), function (err, permitted) {
             if (err) {
                 self.sendError(res, 500, err);
                 return;
@@ -170,7 +175,7 @@ var RestAPI = function (server, opts, handlers) {
                 return;
             }
 
-            self.handlers.todo.newTodoList(req.params.userid, req.body.name, function (err, list) {
+            self.handlers.todo.newTodoList(req.get(self.cfg.UserIdHeader), req.body.name, function (err, list) {
                 if (err) {
                     self.sendError(res, 500, err);
                     return;
@@ -184,12 +189,17 @@ var RestAPI = function (server, opts, handlers) {
 
     self.getTodoLists = function (req, res) {
         self.logger.trace('[REST API] getTodoLists. Params: %j', req.body);
-        if (!req.get(self.cfg.AuthToken)) {
+        if (!req.get(self.cfg.AuthTokenHeader)) {
             self.sendError(res, 401);
             return;
         }
 
-        self.checkPermission(req.params.userid, req.get(self.cfg.AuthToken), function (err, permitted) {
+        if (!req.get(self.cfg.UserIdHeader)) {
+            self.sendError(res, 401);
+            return;
+        }
+
+        self.checkPermission(req.get(self.cfg.UserIdHeader), req.get(self.cfg.AuthTokenHeader), function (err, permitted) {
             if (err) {
                 self.sendError(res, 500, err);
                 return;
@@ -200,7 +210,7 @@ var RestAPI = function (server, opts, handlers) {
                 return;
             }
 
-            self.handlers.todo.getTodoListByUser(req.params.userid, function (err, results) {
+            self.handlers.todo.getTodoListByUser(req.get(self.cfg.UserIdHeader), function (err, results) {
                 if (err) {
                     self.sendError(res, 500, err);
                     return;
@@ -214,12 +224,17 @@ var RestAPI = function (server, opts, handlers) {
 
     self.getTodoListDetails = function (req, res) {
         self.logger.trace('[REST API] getTodoListDetails. Params: %j', req.body);
-        if (!req.get(self.cfg.AuthToken)) {
+        if (!req.get(self.cfg.AuthTokenHeader)) {
             self.sendError(res, 401);
             return;
         }
 
-        self.checkPermission(req.params.userid, req.get(self.cfg.AuthToken), function (err, permitted) {
+        if (!req.get(self.cfg.UserIdHeader)) {
+            self.sendError(res, 401);
+            return;
+        }
+
+        self.checkPermission(req.get(self.cfg.UserIdHeader), req.get(self.cfg.AuthTokenHeader), function (err, permitted) {
             if (err) {
                 self.sendError(res, 500, err);
                 return;
@@ -244,7 +259,12 @@ var RestAPI = function (server, opts, handlers) {
 
     self.createTodo = function (req, res) {
         self.logger.trace('[REST API] createTodo. Params: %j', req.body);
-        if (!req.get(self.cfg.AuthToken)) {
+        if (!req.get(self.cfg.AuthTokenHeader)) {
+            self.sendError(res, 401);
+            return;
+        }
+
+        if (!req.get(self.cfg.UserIdHeader)) {
             self.sendError(res, 401);
             return;
         }
@@ -254,7 +274,7 @@ var RestAPI = function (server, opts, handlers) {
             return;
         }
 
-        self.checkPermission(req.params.userid, req.get(self.cfg.AuthToken), function (err, permitted) {
+        self.checkPermission(req.get(self.cfg.UserIdHeader), req.get(self.cfg.AuthTokenHeader), function (err, permitted) {
             if (err) {
                 self.sendError(res, 500, err);
                 return;
@@ -279,12 +299,17 @@ var RestAPI = function (server, opts, handlers) {
 
     self.getTodosFromList = function (req, res) {
         self.logger.trace('[REST API] getTodosFromList. Params: %j', req.body);
-        if (!req.get(self.cfg.AuthToken)) {
+        if (!req.get(self.cfg.AuthTokenHeader)) {
             self.sendError(res, 401);
             return;
         }
 
-        self.checkPermission(req.params.userid, req.get(self.cfg.AuthToken), function (err, permitted) {
+        if (!req.get(self.cfg.UserIdHeader)) {
+            self.sendError(res, 401);
+            return;
+        }
+
+        self.checkPermission(req.get(self.cfg.UserIdHeader), req.get(self.cfg.AuthTokenHeader), function (err, permitted) {
             if (err) {
                 self.sendError(res, 500, err);
                 return;
@@ -309,12 +334,17 @@ var RestAPI = function (server, opts, handlers) {
 
     self.getTodoDetail = function (req, res) {
         self.logger.trace('[REST API] getTodoDetail. Params: %j', req.body);
-        if (!req.get(self.cfg.AuthToken)) {
+        if (!req.get(self.cfg.AuthTokenHeader)) {
             self.sendError(res, 401);
             return;
         }
 
-        self.checkPermission(req.params.userid, req.get(self.cfg.AuthToken), function (err, permitted) {
+        if (!req.get(self.cfg.UserIdHeader)) {
+            self.sendError(res, 401);
+            return;
+        }
+
+        self.checkPermission(req.get(self.cfg.UserIdHeader), req.get(self.cfg.AuthTokenHeader), function (err, permitted) {
             if (err) {
                 self.sendError(res, 500, err);
                 return;
@@ -339,12 +369,17 @@ var RestAPI = function (server, opts, handlers) {
 
     self.updateTodo = function (req, res) {
         self.logger.trace('[REST API] updateTodo. Params: %j', req.body);
-        if (!req.get(self.cfg.AuthToken)) {
+        if (!req.get(self.cfg.AuthTokenHeader)) {
             self.sendError(res, 401);
             return;
         }
 
-        self.checkPermission(req.params.userid, req.get(self.cfg.AuthToken), function (err, permitted) {
+        if (!req.get(self.cfg.UserIdHeader)) {
+            self.sendError(res, 401);
+            return;
+        }
+
+        self.checkPermission(req.get(self.cfg.UserIdHeader), req.get(self.cfg.AuthTokenHeader), function (err, permitted) {
             if (err) {
                 self.sendError(res, 500, err);
                 return;
@@ -369,12 +404,17 @@ var RestAPI = function (server, opts, handlers) {
 
     self.deleteTodo = function (req, res) {
         self.logger.trace('[REST API] deleteTodo. Params: %j', req.body);
-        if (!req.get(self.cfg.AuthToken)) {
+        if (!req.get(self.cfg.AuthTokenHeader)) {
             self.sendError(res, 401);
             return;
         }
 
-        self.checkPermission(req.params.userid, req.get(self.cfg.AuthToken), function (err, permitted) {
+        if (!req.get(self.cfg.UserIdHeader)) {
+            self.sendError(res, 401);
+            return;
+        }
+
+        self.checkPermission(req.get(self.cfg.UserIdHeader), req.get(self.cfg.AuthTokenHeader), function (err, permitted) {
             if (err) {
                 self.sendError(res, 500, err);
                 return;
@@ -402,14 +442,14 @@ RestAPI.prototype.init = function () {
     this.server.post('/api/user', this.registerUser);
     this.server.post('/api/user/login', this.loginUser);
     this.server.post('/api/user/logout', this.logoutUser);
-    this.server.post('/api/user/:userid/todolist', this.createTodoList);
-    this.server.get('/api/user/:userid/todolist', this.getTodoLists);
-    this.server.get('/api/user/:userid/todolist/:todolistid', this.getTodoListDetails);
-    this.server.post('/api/user/:userid/todolist/:todolistid/todo', this.createTodo);
-    this.server.get('/api/user/:userid/todolist/:todolistid/todo', this.getTodosFromList);
-    this.server.get('/api/user/:userid/todolist/:todolistid/todo/:todoid', this.getTodoDetail);
-    this.server.put('/api/user/:userid/todolist/:todolistid/todo/:todoid', this.updateTodo);
-    this.server.delete('/api/user/:userid/todolist/:todolistid/todo/:todoid', this.deleteTodo);
+    this.server.post('/api/todolist', this.createTodoList);
+    this.server.get('/api/todolist', this.getTodoLists);
+    this.server.get('/api/todolist/:todolistid', this.getTodoListDetails);
+    this.server.post('/api/todolist/:todolistid/todo', this.createTodo);
+    this.server.get('/api/todolist/:todolistid/todo', this.getTodosFromList);
+    this.server.get('/api/todolist/:todolistid/todo/:todoid', this.getTodoDetail);
+    this.server.put('/api/todolist/:todolistid/todo/:todoid', this.updateTodo);
+    this.server.delete('/api/todolist/:todolistid/todo/:todoid', this.deleteTodo);
     // this.server.get('*', function (req, res) {
     //     res.send(404);
     // });
