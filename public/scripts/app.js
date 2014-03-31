@@ -3,7 +3,7 @@
  *
  * @type {angular.Module}
  */
-angular.module('meanTodoApp', ['ngRoute'])
+angular.module('meanTodoApp', ['ngRoute', 'ngQuickDate', 'angular-table'])
     .config(function ($routeProvider) {
         'use strict';
 
@@ -17,3 +17,4 @@ angular.module('meanTodoApp', ['ngRoute'])
             redirectTo: '/'
         });
     });
+    
