@@ -1,0 +1,27 @@
+{
+    "LogLevel": "trace",
+    "DefaultPort": 9000,
+    "Security": {
+        "PrivateKey": "./app/privatekey.pem",
+        "Certificate": "./app/certificate.pem"
+    },
+    "Storage": {
+        "host": "127.0.0.1",
+        "port": 27017,
+        "database": "mean-todo"
+    },
+    "Cache": {
+        "host": "127.0.0.1",
+        "port": 6379,
+        "database": 2
+    },
+    "PasswordConfig": {
+        "algorithm": "pbkdf2",
+        "iterations": 10000,
+        "salt": 64,
+        "size": 256,
+        "tokenSize": 16,
+        "tokenExpire": 3600,
+        "missingPasswordRetries": 0
+    }
+}

@@ -1,0 +1,41 @@
+{
+  "name": "tiago-bernardo-project",
+  "version": "0.1.0",
+  "description": "TODO app",
+  "author": "Tiago Bernardo <tiago.bernardo@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:tasb/mean-todo-app.git"
+  },
+  "keywords": [
+    "todo",
+    "mongo",
+    "express",
+    "angular",
+    "node",
+    "mean"
+  ],
+  "main": "index.js",
+  "scripts": {
+    "test": "NODE_ENV=test ./node_modules/.bin/mocha --reporter spec --timeout 10000  --recursive test*",
+    "start": "NODE_ENV=dev node index.js --port 9500 | bunyan"
+  },
+  "dependencies": {
+    "mongoose": "3.8.x",
+    "mongoose-validate": "0.0.x",
+    "bunyan": "0.22.x",
+    "redis": "0.10.x",
+    "hiredis": "0.1.x",
+    "underscore": "1.6.x",
+    "express": "3.5.x",
+    "nopt": "2.2.x"
+  },
+  "devDependencies": {
+    "mocha": "1.18.x",
+    "should": "3.1.x",
+    "supertest": "0.10.x"
+  },
+  "engines": {
+    "node": ">=0.10"
+  }
+}

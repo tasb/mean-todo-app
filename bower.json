@@ -1,0 +1,33 @@
+{
+  "name": "tiago-bernardo-project",
+  "version": "0.1.0",
+  "authors": [
+    "Tiago Bernardo <tiago.bernardo@gmail.com>"
+  ],
+  "description": "TODO app",
+  "main": "index.js",
+  "moduleType": [
+    "node"
+  ],
+  "keywords": [
+    "todo",
+    "mongo",
+    "express",
+    "angular",
+    "node",
+    "mean"
+  ],
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular": "~1.2.15",
+    "bootstrap": "~3.1.1",
+    "ngQuickDate": "~1.2.10"
+  }
+}
