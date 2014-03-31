@@ -29,7 +29,7 @@ var RestAPI = function (server, opts, handlers) {
         };
 
         res.type('json');
-        res.send(code).send(body);
+        res.send(code, body);
     };
 
     self.sendResponse = function (res, body) {
@@ -101,13 +101,13 @@ var RestAPI = function (server, opts, handlers) {
             return;
         }
 
-        self.handlers.user.login(req.body.email, req.body.password, function (err, token) {
+        self.handlers.user.login(req.body.email, req.body.password, function (err, data) {
             if (err) {
-                self.sendError(res, 500, err);
+                self.sendError(res, 401, err);
                 return;
             }
 
-            self.sendResponse(res, { token: token });
+            self.sendResponse(res, data);
         });
     };
 
@@ -436,12 +436,26 @@ var RestAPI = function (server, opts, handlers) {
 
         });
     };
+
+    self.getAllPriorities = function (req, res) {
+        self.logger.trace('[REST API] getAllPriorities');
+
+        self.handlers.todo.getPriorities(function (err, priorities) {
+            if (err) {
+                self.sendError(res, 500, err);
+                return;
+            }
+
+            self.sendResponse(res, priorities);
+        });
+    };
 };
 
 RestAPI.prototype.init = function () {
     this.server.post('/api/user', this.registerUser);
     this.server.post('/api/user/login', this.loginUser);
     this.server.post('/api/user/logout', this.logoutUser);
+    this.server.get('/api/priority', this.getAllPriorities);
     this.server.post('/api/todolist', this.createTodoList);
     this.server.get('/api/todolist', this.getTodoLists);
     this.server.get('/api/todolist/:todolistid', this.getTodoListDetails);

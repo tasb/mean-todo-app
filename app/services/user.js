@@ -250,7 +250,10 @@ UserService.prototype.login = function (email, password, cb) {
         }
 
         token = self.generateToken(email);
-        cb(null, token);
+        cb(null, {
+            token: token,
+            userId: thisUser._id
+        });
     });
 };
 

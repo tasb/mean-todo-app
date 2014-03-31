@@ -47,7 +47,7 @@ var Server = function (opts) {
             self.app.use(express.urlencoded());
             self.app.use(express.methodOverride());
             self.app.use(self.app.router);
-            self.app.use(express.logger());
+            self.app.use(express.logger(process.env.NODE_ENV));
             self.app.use(express.static(__dirname + '/../public'));
             self.app.use(express.errorHandler({
                 dumpExceptions: true,
@@ -86,6 +86,17 @@ var Server = function (opts) {
         }, {
             user: self.userService,
             todo: self.todoService
+        });
+
+        self.todoService.getPriorities(function (err, data) {
+            if (!data.length) {
+                self.todoService.newPriority('Urgent', 1, '#FF0000', function () {
+                });
+                self.todoService.newPriority('High', 2, '#00FF00', function () {
+                });
+                self.todoService.newPriority('Normal', 3, '#0000FF', function () {
+                });
+            }
         });
     };
 
