@@ -87,6 +87,17 @@ var Server = function (opts) {
             user: self.userService,
             todo: self.todoService
         });
+
+        self.todoService.getPriorities(function (err, data) {
+            if (!data.length) {
+                self.todoService.newPriority('Urgent', 1, '#FF0000', function () {
+                });
+                self.todoService.newPriority('High', 2, '#00FF00', function () {
+                });
+                self.todoService.newPriority('Normal', 3, '#0000FF', function () {
+                });
+            }
+        });
     };
 
     self.bootstrap();
