@@ -29,7 +29,7 @@ var RestAPI = function (server, opts, handlers) {
         };
 
         res.type('json');
-        res.send(code).send(body);
+        res.send(code, body);
     };
 
     self.sendResponse = function (res, body) {

@@ -47,7 +47,7 @@ var Server = function (opts) {
             self.app.use(express.urlencoded());
             self.app.use(express.methodOverride());
             self.app.use(self.app.router);
-            self.app.use(express.logger());
+            self.app.use(express.logger(process.env.NODE_ENV));
             self.app.use(express.static(__dirname + '/../public'));
             self.app.use(express.errorHandler({
                 dumpExceptions: true,
