@@ -6,8 +6,9 @@ angular.module('meanTodoApp')
         $scope.priorities = [];
         $scope.todos = [];
         $scope.todoListId = null;
-        $scope.predicate = 'name';
+        $scope.predicate = 'text';
         $scope.reverse = false;
+        $scope.username = $window.sessionStorage.username;
 
         function init() {
             if (!$window.sessionStorage.token) {

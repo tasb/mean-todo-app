@@ -1,7 +1,9 @@
 <form class="form-signin">
     <h2 class="form-signin-heading">Please sign in</h2>
     <div class="alert alert-danger" ng-show="message">{{ message }}</div>
+    <div class="alert alert-success" ng-show="signupMessage">{{ signupMessage }}</div>
     <input type="text" class="input-block-level" placeholder="Email address" ng-model="username">
     <input type="password" class="input-block-level" placeholder="Password" ng-model="password">
-    <button class="btn btn-large btn-primary" type="submit" ng-click="login()">Sign in</button>
+    <button class="btn btn-large btn-primary" type="submit" ng-click="login()">Login</button>
+    <button class="btn btn-large btn-success" type="submit" ng-click="signup()">Sign up</button>
 </form>
