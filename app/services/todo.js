@@ -344,7 +344,7 @@ TodoService.prototype.getTodoById = function (todoId, cb) {
         return;
     }
 
-    this.TodoModel.findById(todoId, cb);
+    this.TodoModel.findById(todoId, cb).populate('priority');
 };
 
 /**

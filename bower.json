@@ -28,6 +28,7 @@
   "dependencies": {
     "angular": "~1.2.15",
     "bootstrap": "~3.1.1",
-    "ngQuickDate": "~1.2.10"
+    "ngQuickDate": "~1.2.10",
+    "angular-route": "~1.2.15"
   }
 }
