@@ -37,7 +37,7 @@
     <a href="" ng-click="predicate = 'priority.order'; reverse=!reverse">Order by Priority</a> | 
     <a href="" ng-click="predicate = 'dueDate'; reverse=!reverse">Order by Due Date</a>
     <li ng-repeat="t in todos | orderBy:predicate:reverse" class="todo">
-        <a><span class="glyphicon glyphicon-remove"></span></a>
+        <a ng-click="deleteTodo($index)"><span class="glyphicon glyphicon-remove"></span></a>
       <input type="checkbox" ng-model="t.completed" ng-change="mark($index)"> <b>{{t.text}}</b> <span ng-show="t.priority">is {{ t.priority.name }} </span> <span ng-show="t.dueDate"> ends on {{ t.dueDate | date:'yyyy-MM-dd' }} </span>
     </li>
   </ul>
