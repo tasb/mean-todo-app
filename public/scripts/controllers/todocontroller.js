@@ -14,7 +14,7 @@ angular.module('meanTodoApp')
             if (!$window.sessionStorage.token) {
                 $location.path("/");
             }
-        };
+        }
 
         function getAllTodos() {
             todoService.getTodos($window.sessionStorage.token, $window.sessionStorage.userId, $scope.todoListId)
@@ -24,7 +24,7 @@ angular.module('meanTodoApp')
                 .error(function () {
                     $scope.message = 'Error getting TODO entries';
                 });
-        };
+        }
 
         todoService.getPriorities().success(function (data) {
             $scope.priorities = data;
@@ -46,8 +46,8 @@ angular.module('meanTodoApp')
             todoService.addTodo($window.sessionStorage.token, $window.sessionStorage.userId, $scope.todoListId,
                 $scope.todo.text, $scope.todo.dueDate, $scope.todo.priority).success(function (data) {
                     getAllTodos();
-                }).error (function () {
-                    $scope.message = 'Cannot added TODO';
+                }).error (function (data) {
+                    $scope.message = 'Cannot added TODO: ' + data;
                 });
         };
 
@@ -56,8 +56,18 @@ angular.module('meanTodoApp')
             todoService.markCompleted($window.sessionStorage.token, $window.sessionStorage.userId, 
                 $scope.todoListId, todo).success(function (data) {
                     getAllTodos();
-                }).error (function () {
-                    $scope.message = 'Cannot added TODO';
+                }).error (function (data) {
+                    $scope.message = 'Cannot mark as completed TODO: ' + data;
+                });
+        };
+
+        $scope.deleteTodo = function (index) {
+            var todo = $scope.todos[index];
+            todoService.deleteTodo($window.sessionStorage.token, $window.sessionStorage.userId, 
+                $scope.todoListId, todo._id).success(function (data) {
+                    getAllTodos();
+                }).error (function (data) {
+                    $scope.message = 'Cannot delete TODO: ' + data;
                 });
         };
 

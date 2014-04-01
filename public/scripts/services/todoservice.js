@@ -22,6 +22,12 @@ angular.module('meanTodoApp')
                 'X-User-Id': userId }
             });
         },
+        deleteTodo: function(token, userId, todolistId, todoId) {
+            return $http.delete('/api/todolist/' + todolistId + '/todo/' + todoId, { headers: 
+                { 'X-Auth-Token': token,
+                'X-User-Id': userId }
+            });
+        },
         addTodo: function (token, userId, todolistId, text, dueDate, priority) {
             var body = {
                 text: text,
