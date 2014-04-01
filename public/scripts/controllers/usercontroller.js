@@ -27,5 +27,16 @@ angular.module('meanTodoApp')
                 });
         };
 
+        $scope.signup = function () {
+            userService.register($scope.username, $scope.password)
+                .success(function (data, status, headers, config) {
+                    $scope.signupMessage = 'User created. Please login to editing your TODOs';
+                })
+                .error(function (data, status, headers, config) {
+                    // Handle login errors here
+                    $scope.message = 'Error: Invalid user or password';
+                });
+        };
+
         init();
     });

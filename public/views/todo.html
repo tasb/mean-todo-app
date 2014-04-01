@@ -1,4 +1,6 @@
-<button class="btn btn-large btn-primary" type="submit" ng-show='loggedIn' ng-click="logout()">Logout</button>
+<div class="panel panel-default" style="heigth: 800px;">
+    <h3>TODO's from {{ username }}</h3> <button class="btn btn-large btn-primary" type="submit" ng-show='loggedIn' ng-click="logout()">Logout</button>
+</div>
 <div class="panel panel-default">
   <div class="panel-body">
     <div class="input-group">
@@ -20,7 +22,6 @@
 <div class="alert alert-danger" ng-show="message">{{ message }}</div>
 
 <div class="panel panel-default" style="heigth: 800px;">
-    <h4>My TODO's</h4>
   <ul>
     <!--<input type="search" ng-model="filterValue" placeholder="filter TODOs" />-->
     <a href="" ng-click="predicate = 'text'; reverse=!reverse">Order by Text</a> | 
