@@ -1,25 +1,34 @@
-<div class="panel panel-default" style="heigth: 800px;">
-    <h3>TODO's from {{ username }}</h3> <button class="btn btn-large btn-primary" type="submit" ng-show='loggedIn' ng-click="logout()">Logout</button>
-</div>
-<div class="panel panel-default">
-  <div class="panel-body">
-    <div class="input-group">
-  <span class="input-group-addon">TODO</span>
-  <input type="text" class="form-control" placeholder="Add TODO text" ng-model='todo.text'>
-</div>
-<br/>
-<br/>
-    <span  class="nullable">
-    <select ng-model="todo.priority" ng-options="p._id as p.name for p in priorities">
-      <option value="">-- choose priority --</option>
-    </select>
-  </span><br/><br/>
-  <datepicker ng-model='todo.dueDate' disable-timepicker='true' placeholder="Click to set due date"></datepicker>
-  <button class="btn btn-large btn-primary" type="submit" ng-click="addTodo()">Add Todo</button>
-  </div>
+
+<div class="row rowTitle">
+    <div class="col-md-8 rowLeft"><p class="title">TODO's from {{ username }}</p></div>
+    <div class="col-md-4 rowRight"><button class="btn btn-large btn-primary" type="submit" ng-show='loggedIn' ng-click="logout()">Logout</button></div>
 </div>
 
 <div class="alert alert-danger" ng-show="message">{{ message }}</div>
+
+<div class="panel panel-default">
+    <div class="panel-body">
+        <div class="row rowTitle">
+            <div class="col-md-9 rowLeft">
+                <div class="input-group">
+                    <span class="input-group-addon">TODO</span>
+                    <input type="text" class="form-control" placeholder="Add TODO text" ng-model='todo.text'>
+                </div>
+            </div>
+            <div class="col-md-3 rowRight">
+                <select ng-model="todo.priority" ng-options="p._id as p.name for p in priorities">
+                    <option value="">Choose a priority</option>
+                </select>
+                <datepicker ng-model='todo.dueDate' disable-timepicker='true' placeholder="Insert due date"></datepicker>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 rowRight">
+                <button class="btn btn-large btn-primary" type="submit" ng-click="addTodo()">Add Todo</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="panel panel-default" style="heigth: 800px;">
   <ul>
@@ -27,7 +36,8 @@
     <a href="" ng-click="predicate = 'text'; reverse=!reverse">Order by Text</a> | 
     <a href="" ng-click="predicate = 'priority.order'; reverse=!reverse">Order by Priority</a> | 
     <a href="" ng-click="predicate = 'dueDate'; reverse=!reverse">Order by Due Date</a>
-    <li ng-repeat="t in todos | orderBy:predicate:reverse">
+    <li ng-repeat="t in todos | orderBy:predicate:reverse" class="todo">
+        <a><span class="glyphicon glyphicon-remove"></span></a>
       <input type="checkbox" ng-model="t.completed" ng-change="mark($index)"> <b>{{t.text}}</b> <span ng-show="t.priority">is {{ t.priority.name }} </span> <span ng-show="t.dueDate"> ends on {{ t.dueDate | date:'yyyy-MM-dd' }} </span>
     </li>
   </ul>
