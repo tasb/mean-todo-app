@@ -1,7 +1,17 @@
-<form class="form-signin">
-    <h2 class="form-signin-heading">Please sign in</h2>
+<form name="loginForm" class="form-signin" ng-submit="submitForm(loginForm.$valid)" novalidate>
+    <h2 class="form-signin-heading">Login</h2>
     <div class="alert alert-danger" ng-show="message">{{ message }}</div>
-    <input type="text" class="input-block-level" placeholder="Email address" ng-model="username">
-    <input type="password" class="input-block-level" placeholder="Password" ng-model="password">
-    <button class="btn btn-large btn-primary" type="submit" ng-click="login()">Sign in</button>
+    <div class="alert alert-success" ng-show="signupMessage">{{ signupMessage }}</div>
+    <input type="email" name="emailInput" class="input-block-level" placeholder="Email address" ng-model="username" required>
+    <p ng-show="loginForm.emailInput.$invalid && !loginForm.emailInput.$pristine" style="color: red;">Enter a valid email.</p>
+    <input type="password" name="passInput" class="input-block-level" placeholder="Password" ng-model="password" ng-minlength="3" required>
+    <p ng-show="loginForm.passInput.$invalid && !loginForm.passInput.$pristine" style="color: red;">Password must be bigger than 3 chars.</p>
+    <div class="row">
+        <div class="col-md-6 rowLeft">
+            <button class="btn btn-large btn-primary" type="submit" ng-click="login()">Login</button>
+        </div>
+        <div class="col-md-6 rowRight">
+            <button class="btn btn-large btn-success" type="submit" ng-click="signup()">Sign up</button>
+        </div>
+    </div>
 </form>

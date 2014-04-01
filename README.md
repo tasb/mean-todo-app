@@ -29,7 +29,7 @@ Tech
 Prerequesite
 ------------
 
-You [node.js] running on your machine.
+You need [node.js] running on your machine.
 For persistence, this app needs a [MongoDB] server and a [Redis] server.
 
 Installation
