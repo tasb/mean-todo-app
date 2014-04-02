@@ -26,6 +26,20 @@ angular.module('meanTodoApp')
                 });
         }
 
+        function getTodoById(id) {
+            var index,
+                todo;
+
+            for (index = $scope.todos.length-1; index >= 0; index--) {
+                todo = $scope.todos[index];
+                if (todo._id === id) {
+                    return todo;
+                }
+            }
+
+            return null;
+        }
+
         todoService.getPriorities().success(function (data) {
             $scope.priorities = data;
         });
@@ -51,24 +65,33 @@ angular.module('meanTodoApp')
                 });
         };
 
-        $scope.mark = function (index) {
-            var todo = $scope.todos[index];
-            todoService.markCompleted($window.sessionStorage.token, $window.sessionStorage.userId, 
-                $scope.todoListId, todo).success(function (data) {
-                    getAllTodos();
-                }).error (function (data) {
-                    $scope.message = 'Cannot mark as completed TODO: ' + data;
-                });
+        $scope.mark = function (id) {
+            var todo = getTodoById(id);
+
+            if (todo) {
+                todoService.markCompleted($window.sessionStorage.token, $window.sessionStorage.userId, 
+                    $scope.todoListId, todo).success(function (data) {
+                        getAllTodos();
+                    }).error (function (data) {
+                        $scope.message = 'Cannot mark as completed TODO: ' + data;
+                    });
+            } else {
+                $scope.message = 'Something wrong with your data. Cannot find TODO';
+            }
         };
 
-        $scope.deleteTodo = function (index) {
-            var todo = $scope.todos[index];
-            todoService.deleteTodo($window.sessionStorage.token, $window.sessionStorage.userId, 
-                $scope.todoListId, todo._id).success(function (data) {
-                    getAllTodos();
-                }).error (function (data) {
-                    $scope.message = 'Cannot delete TODO: ' + data;
-                });
+        $scope.deleteTodo = function (id) {
+            var todo = getTodoById(id);
+            if (todo) {
+                todoService.deleteTodo($window.sessionStorage.token, $window.sessionStorage.userId, 
+                    $scope.todoListId, todo._id).success(function (data) {
+                        getAllTodos();
+                    }).error (function (data) {
+                        $scope.message = 'Cannot delete TODO: ' + data;
+                    });
+            } else {
+                $scope.message = 'Something wrong with your data. Cannot find TODO';
+            }
         };
 
         $scope.logout = function () {
