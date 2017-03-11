@@ -67,6 +67,6 @@ Open browser on url [http://127.0.0.1:9500] and you can start organizing your da
 [MongoDB]:https://www.mongodb.org
 [Angular.js]:http://angularjs.org
 [Mongoose]:http://mongoosejs.com
-[Mocha]:http://visionmedia.github.io/mocha
+[Mocha]:http://mochajs.org/
 [http://127.0.0.1:9500]:http://127.0.0.1:9500
 [Redis]:http://redis.io
